@@ -1,0 +1,13 @@
+@import url('form/form.css');
+@import url('tasks/tasks.css');
+
+.content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.content__title {
+    font-size: 40px;
+}
