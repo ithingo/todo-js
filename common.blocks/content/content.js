@@ -19,23 +19,20 @@ function getFormInputValue() {
     return inputField.value;
 }
 
-// function addElement() {
-    // let newElement = document.createElement('li');
-    // newElement.setAttribute('class', elementSelector);
-    // newElement.innerHTML = getFormInputValue();
-    // //
-    // // tasksList.appendChild(newElement);
-    //
-    // // $('.tasks__list')
-    // document.body.appendChild(newElement);
-// }
+function addElement() {
+    let newElement = document.createElement('li');
+    newElement.className = elementSelector;
+    let inputedValue = getFormInputValue();
+
+    if (inputedValue !== '') {
+        newElement.textContent = inputedValue;
+        document.body.appendChild(newElement);
+    }
+}
 
 $(document).ready(() => {
 
     addButton.click(() => {
-        let newElement = document.createElement('li');
-        newElement.setAttribute('class', elementSelector);
-        newElement.innerHTML = getFormInputValue();
-        document.body.appendChild(newElement);
+        addElement();
     });
 });
