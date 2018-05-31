@@ -12,7 +12,7 @@ const checkboxClassName = 'item_checkbox';
 const enterKey = 'Enter';
 const keyEvent = 'keyup';
 
-const defaultStatusForTask = 'undone';
+const defaultStatusForTasks = 'undone';
 const doneStatusForTasks = 'done';
 
 const tagTypeForItems = 'li';
@@ -41,7 +41,7 @@ function clearInputField(inputField) {
 function createObjectFromNewValue(inputedValue) {
     return {
         inputedContent: inputedValue,
-        statusOfProgress: defaultStatusForTask,
+        statusOfProgress: defaultStatusForTasks,
     }
 }
 
@@ -50,7 +50,7 @@ function createHtmlElementFromArrayElement(arrayElement, tag, selector) {
     let taskStatusSelector = '';
 
     // ? maybe only default ?
-    if (arrayElement.statusOfProgress === defaultStatusForTask) {
+    if (arrayElement.statusOfProgress === defaultStatusForTasks) {
         taskStatusSelector = defaultStatusClassName;
     } else {
         taskStatusSelector = doneStatusClassName;
@@ -101,7 +101,7 @@ function changeItemStateIfSelected(listItemArray, chosenItemNode, chosenStatus) 
     let objectEqualsToSelected = findItemInArrayWithSameContent(chosenItemNode.textContent, itemListArray);
     let indexOfFoundedObject = findItemInArrayWithIndex(itemListArray, objectEqualsToSelected);
     listItemArray[indexOfFoundedObject].statusOfProgress = chosenStatus;
-    repaint(chosenItemNode, chosenStatus);
+    repaintCurrentNode(chosenItemNode, chosenStatus);
 }
 
 function oppositValueForSelector(selector) {
@@ -112,12 +112,26 @@ function oppositValueForSelector(selector) {
     }
 }
 
-function repaint(chosenItemNode, chosenStatus) {
-    const repaintClassName = chosenStatus === defaultStatusForTask ? defaultStatusClassName : doneStatusClassName;
+function changeStatusForNode(currentNode, newStatus) {
+    const newClassName = newStatus === defaultStatusForTasks ? defaultStatusClassName : doneStatusClassName;
+    if (!(currentNode.classList.contains(newClassName))) {
+        currentNode.classList.remove(oppositValueForSelector(newClassName));
+        currentNode.classList.add(newClassName);
+    } else {
+        currentNode.classList.remove(newClassName);
+        currentNode.classList.add(oppositValueForSelector(newClassName));
+    }
+}
 
-    if (!(chosenItemNode.classList.contains(repaintClassName))) {
-        chosenItemNode.classList.remove(oppositValueForSelector(repaintClassName));
-        chosenItemNode.classList.add(repaintClassName);
+function repaintCurrentNode(chosenItemNode, chosenStatus) {
+    const repaintClassName = chosenStatus === defaultStatusForTasks ? defaultStatusClassName : doneStatusClassName;
+    changeStatusForNode(chosenItemNode, repaintClassName);
+}
+
+function repaintAllNodes(elementSelector, clickedStatus) { //done vs undone, already chosen
+    let listElements = document.getElementsByClassName(elementSelector);
+    for (let i = 0; i < listElements.size; i++) {
+        changeStatusForNode(listElements[i], clickedStatus);
     }
 }
 
@@ -129,7 +143,7 @@ function listenToItemsForClicking(listItemArray, checkboxSelector) {
         if (this.checked) {
            chosenStatus = doneStatusForTasks;
         } else {
-            chosenStatus = defaultStatusForTask;
+            chosenStatus = defaultStatusForTasks;
         }
         changeItemStateIfSelected(listItemArray, chosenItemNode, chosenStatus);
     });
