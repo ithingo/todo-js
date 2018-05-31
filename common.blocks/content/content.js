@@ -70,29 +70,42 @@ function withdrawElements(itemList, itemListArray) {
     itemList.innerHTML = elementTaggedList;
 
 }
-// function findItemInArrayWithSameContent(htmlItemContent, itemsListArray) {
-//     // let foundedElement = itemsListArray.indexOf(htmlItemContent);
-//     let foundedElement = _.findWhere(itemsListArray, {inputedContent: htmlItemContent});
-//     alert(foundedElement.inputedContent);
-// }
+
+function findItemInArrayWithSameContent(htmlItemContent, itemsListArray) {
+    let foundedElement = _.findWhere(itemsListArray, {inputedContent: htmlItemContent});
+    return foundedElement;
+}
+
+function findItemInArrayWithIndex(itemlistArray, chosenObject) {
+    let indexOfFoundedObject = _.indexOf(itemlistArray, chosenObject);
+    return indexOfFoundedObject;
+}
 //
 // function isTaskDone(arrayElement) {
 //     return arrayElement.statusOfProgress === doneStatusForTasks;
 // }
 //
-// function changeItemStateIfSelected(itemList) {
-//
-// }
 
-function listenToItemsForClicking(checkboxSelector) {
+// function addSelectorTo
+
+function changeItemStateIfSelected(listItemArray, chosenItemNode, chosenStatus) {
+    let objectEqualsToSelected = findItemInArrayWithSameContent(chosenItemNode.textContent, itemListArray);
+    let indexOfFoundedObject = findItemInArrayWithIndex(itemListArray, objectEqualsToSelected);
+    alert(indexOfFoundedObject);
+    // objectEqualsToSelected.statusOfProgress = chosenStatus;
+}
+
+function listenToItemsForClicking(listItemArray, checkboxSelector) {
     const checkboxSelectorForJquery = '.' + checkboxSelector;
     $(checkboxSelectorForJquery).change(function() {
+        let chosenItemNode = this.parentNode;
+        let chosenStatus = '';
         if (this.checked) {
-            let chosenItemNode = this.parentNode;
-            // findItemInArrayWithSameContent(chosenItemNode.textContent, itemListArray);
+           chosenStatus = doneStatusForTasks;
         } else {
-            alert('not');
+            chosenStatus = defaultStatusForTask;
         }
+        changeItemStateIfSelected(listItemArray, chosenItemNode, chosenStatus);
     });
 }
 
@@ -107,7 +120,7 @@ $(document).ready(() => {
 
         withdrawElements(itemsList, itemListArray);
 
-        listenToItemsForClicking(checkboxClassName);
+        listenToItemsForClicking(itemListArray, checkboxClassName);
     });
 
 });
