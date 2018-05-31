@@ -1,4 +1,4 @@
-const inputField = document.getElementById('form_input');
+let inputField = document.getElementById('form_input');
 const addButton = $('#add_button');
 const itemsList = $('.tasks__list');
 
@@ -22,6 +22,10 @@ function getFormInputValue() {
     return inputField.value;
 }
 
+function clearInputField() {
+    inputField.value = "";
+}
+
 function addElement() {
     let newElement = document.createElement('li');
     newElement.className = elementSelector;
@@ -39,5 +43,6 @@ $(document).ready(() => {
 
     addButton.click(() => {
         addElement();
+        clearInputField();
     });
 });
