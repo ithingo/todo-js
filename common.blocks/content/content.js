@@ -2,7 +2,10 @@ const duplicateMessage = 'This task is already in the list!';
 
 let inputField = document.getElementById('form_input');
 const itemsList = document.getElementById('task_list');
+
 const addButton = $('#add_button');
+const deleteAllButton = $('#delete_all_button');
+const selectAllButton = $('#select_all_button');
 
 const elementSelector = "tasks__item";
 const defaultStatusClassName = 'tasks__item_default';
@@ -49,7 +52,7 @@ function createHtmlElementFromArrayElement(arrayElement, tag, selector) {
     let partOfStringWithCheckbox = `<input type="checkbox" class="${checkboxClassName}">`;
     let taskStatusSelector = '';
 
-    // ? maybe only default ?
+    // if use once again better be as written here
     if (arrayElement.statusOfProgress === defaultStatusForTasks) {
         taskStatusSelector = defaultStatusClassName;
     } else {
@@ -128,14 +131,14 @@ function repaintCurrentNode(chosenItemNode, chosenStatus) {
     changeStatusForNode(chosenItemNode, repaintClassName);
 }
 
-function repaintAllNodes(elementSelector, clickedStatus) { //done vs undone, already chosen
+function repaintAllNodes(elementSelector, clickedStatus) {
     let listElements = document.getElementsByClassName(elementSelector);
     for (let i = 0; i < listElements.size; i++) {
         changeStatusForNode(listElements[i], clickedStatus);
     }
 }
 
-function listenToItemsForClicking(listItemArray, checkboxSelector) {
+function listenToItemsForClicking(listItemsArray, checkboxSelector) {
     const checkboxSelectorForJquery = '.' + checkboxSelector;
     $(checkboxSelectorForJquery).change(function() {
         let chosenItemNode = this.parentNode;
@@ -145,9 +148,21 @@ function listenToItemsForClicking(listItemArray, checkboxSelector) {
         } else {
             chosenStatus = defaultStatusForTasks;
         }
-        changeItemStateIfSelected(listItemArray, chosenItemNode, chosenStatus);
+        changeItemStateIfSelected(listItemsArray, chosenItemNode, chosenStatus);
     });
 }
+
+function deleteAllObjectsFromArray(listItemsArray) {
+    listItemsArray.length = 0; //or = [] // Array()
+}
+
+function deleteChosenObject(chosenObject, listItemsArray) {
+    const indexOfTheObject = findItemInArrayWithIndex(listItemsArray, chosenObject);
+    listItemsArray[indexOfTheObject] = null;
+    listItemsArray = _.compact(listItemsArray);
+}
+
+
 
 $(document).ready(() => {
     addKeyupEvenListenerForInput(enterKey, keyEvent);
@@ -160,6 +175,14 @@ $(document).ready(() => {
         withdrawElements(itemsList, itemListArray);
 
         listenToItemsForClicking(itemListArray, checkboxClassName);
+
+        //add event listener to delete buttons
+
+    });
+
+    deleteAllButton.click(() => {
+        deleteAllObjectsFromArray(itemListArray);
+        withdrawElements(itemsList, itemListArray);
     });
 
 });
