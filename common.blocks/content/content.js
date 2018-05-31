@@ -1,11 +1,14 @@
 const duplicateMessage = 'This task is already in the list!';
 
+const selectAllStatusForSelectAllButton = 'Select all';
+const deselectAllStatusForSelectAllButton = 'Deselect all';
+
 let inputField = document.getElementById('form_input');
 const itemsList = document.getElementById('task_list');
 
 const addButton = $('#add_button');
 const deleteAllButton = $('#delete_all_button');
-const selectAllButton = $('#select_all_button');
+const chooseAllButton = $('#choose_all_button');
 
 const elementSelector = "tasks__item";
 const defaultStatusClassName = 'tasks__item_default';
@@ -107,22 +110,22 @@ function changeItemStateIfSelected(listItemArray, chosenItemNode, chosenStatus) 
     repaintCurrentNode(chosenItemNode, chosenStatus);
 }
 
-function oppositValueForSelector(selector) {
-    if (selector === doneStatusClassName) {
-        return defaultStatusClassName;
+function oppositValueFor(selector, firstAlternative, secondAlternative) {
+    if (selector === firstAlternative) {
+        return secondAlternative;
     } else {
-        return doneStatusClassName;
+        return firstAlternative;
     }
 }
 
 function changeStatusForNode(currentNode, newStatus) {
     const newClassName = newStatus === defaultStatusForTasks ? defaultStatusClassName : doneStatusClassName;
     if (!(currentNode.classList.contains(newClassName))) {
-        currentNode.classList.remove(oppositValueForSelector(newClassName));
+        currentNode.classList.remove(oppositValueFor(newClassName));
         currentNode.classList.add(newClassName);
     } else {
         currentNode.classList.remove(newClassName);
-        currentNode.classList.add(oppositValueForSelector(newClassName));
+        currentNode.classList.add(oppositValueFor(newClassName));
     }
 }
 
@@ -132,9 +135,11 @@ function repaintCurrentNode(chosenItemNode, chosenStatus) {
 }
 
 function repaintAllNodes(elementSelector, clickedStatus) {
+    const repaintClassName = clickedStatus === defaultStatusForTasks ? defaultStatusClassName : doneStatusClassName;
+
     let listElements = document.getElementsByClassName(elementSelector);
     for (let i = 0; i < listElements.size; i++) {
-        changeStatusForNode(listElements[i], clickedStatus);
+        changeStatusForNode(listElements[i], repaintClassName);
     }
 }
 
@@ -160,9 +165,20 @@ function deleteChosenObject(chosenObject, listItemsArray) {
     const indexOfTheObject = findItemInArrayWithIndex(listItemsArray, chosenObject);
     listItemsArray[indexOfTheObject] = null;
     listItemsArray = _.compact(listItemsArray);
+
 }
 
+function getCurrentButtonValue(button) {
+    return button.text();
+}
 
+function getStatusForAction(currentButtonValueString) {
+    if (currentButtonValueString === selectAllStatusForSelectAllButton) {
+        return doneStatusForTasks;
+    } else {
+        return defaultStatusForTasks;
+    }
+}
 
 $(document).ready(() => {
     addKeyupEvenListenerForInput(enterKey, keyEvent);
@@ -182,7 +198,15 @@ $(document).ready(() => {
 
     deleteAllButton.click(() => {
         deleteAllObjectsFromArray(itemListArray);
+
         withdrawElements(itemsList, itemListArray);
+    });
+
+    chooseAllButton.click(() => {
+        const currentButtonValue = getCurrentButtonValue(chooseAllButton);
+        const itemStatus = getStatusForAction(currentButtonValue);
+        repaintAllNodes()
+
     });
 
 });
