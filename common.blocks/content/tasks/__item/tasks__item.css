@@ -3,3 +3,13 @@
     line-height: 30px;
     height: auto;
 }
+
+.tasks__item_done {
+    text-decoration: line-through;
+    font-style: italic;
+}
+
+.tasks__item_default {
+    text-decoration: none;
+    font-style: normal;
+}

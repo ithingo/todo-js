@@ -1,10 +1,12 @@
+const duplicateMessage = 'This task is already in the list!';
+
 let inputField = document.getElementById('form_input');
 const itemsList = document.getElementById('task_list');
 const addButton = $('#add_button');
 
 const elementSelector = "tasks__item";
-// const defaultStatusClassName = 'tasks__item_default';
-// const doneStatusClassName = 'tasks_item_done';
+const defaultStatusClassName = 'tasks__item_default';
+const doneStatusClassName = 'tasks__item_done';
 const checkboxClassName = 'item_checkbox';
 
 const enterKey = 'Enter';
@@ -43,24 +45,26 @@ function createObjectFromNewValue(inputedValue) {
     }
 }
 
-function addElement(array, inputField) {
-    let inputedValue = getFormInputValue(inputField);
-    if (inputedValue !== '') {
-        //add check for same content
-        let newElement = createObjectFromNewValue(inputedValue);
-        array.push(newElement);
-    }
-}
-
-function createHtmlElementFromArrayElement(arrayElementInputedContent, tag, selector) {
+function createHtmlElementFromArrayElement(arrayElement, tag, selector) {
     let partOfStringWithCheckbox = `<input type="checkbox" class="${checkboxClassName}">`;
-    return `<${tag} class="${selector}">`+ partOfStringWithCheckbox + `${arrayElementInputedContent}` + '<' + "/" + `${tag}>`;
+    let taskStatusSelector = '';
+
+    // ? maybe only default ?
+    if (arrayElement.statusOfProgress === defaultStatusForTask) {
+        taskStatusSelector = defaultStatusClassName;
+    } else {
+        taskStatusSelector = doneStatusClassName;
+    }
+
+    const finalSelectorForTag = selector + ' ' + taskStatusSelector;
+
+    return `<${tag} class="${finalSelectorForTag}">`+ partOfStringWithCheckbox + `${arrayElement.inputedContent}` + '<' + "/" + `${tag}>`;
 }
 
 function createItemsTagsGroupFromArray(array, tag, selector) {
     let itemsTagged = "";
     for (let i = 0; i < array.length; i++) {
-        itemsTagged += createHtmlElementFromArrayElement(array[i].inputedContent, tag, selector);;
+        itemsTagged += createHtmlElementFromArrayElement(array[i], tag, selector);;
     }
     return itemsTagged;
 }
@@ -80,19 +84,41 @@ function findItemInArrayWithIndex(itemlistArray, chosenObject) {
     let indexOfFoundedObject = _.indexOf(itemlistArray, chosenObject);
     return indexOfFoundedObject;
 }
-//
-// function isTaskDone(arrayElement) {
-//     return arrayElement.statusOfProgress === doneStatusForTasks;
-// }
-//
 
-// function addSelectorTo
+function addElementToObjectsArray(array, inputField) {
+    let inputedValue = getFormInputValue(inputField);
+    if (inputedValue !== '') {
+        if (!findItemInArrayWithSameContent(inputedValue, array)) {
+            let newElement = createObjectFromNewValue(inputedValue);
+            array.push(newElement);
+        } else {
+            alert(duplicateMessage);
+        }
+    }
+}
 
 function changeItemStateIfSelected(listItemArray, chosenItemNode, chosenStatus) {
     let objectEqualsToSelected = findItemInArrayWithSameContent(chosenItemNode.textContent, itemListArray);
     let indexOfFoundedObject = findItemInArrayWithIndex(itemListArray, objectEqualsToSelected);
-    alert(indexOfFoundedObject);
-    // objectEqualsToSelected.statusOfProgress = chosenStatus;
+    listItemArray[indexOfFoundedObject].statusOfProgress = chosenStatus;
+    repaint(chosenItemNode, chosenStatus);
+}
+
+function oppositValueForSelector(selector) {
+    if (selector === doneStatusClassName) {
+        return defaultStatusClassName;
+    } else {
+        return doneStatusClassName;
+    }
+}
+
+function repaint(chosenItemNode, chosenStatus) {
+    const repaintClassName = chosenStatus === defaultStatusForTask ? defaultStatusClassName : doneStatusClassName;
+
+    if (!(chosenItemNode.classList.contains(repaintClassName))) {
+        chosenItemNode.classList.remove(oppositValueForSelector(repaintClassName));
+        chosenItemNode.classList.add(repaintClassName);
+    }
 }
 
 function listenToItemsForClicking(listItemArray, checkboxSelector) {
@@ -109,12 +135,11 @@ function listenToItemsForClicking(listItemArray, checkboxSelector) {
     });
 }
 
-
 $(document).ready(() => {
     addKeyupEvenListenerForInput(enterKey, keyEvent);
 
     addButton.click(() => {
-        addElement(itemListArray, inputField);
+        addElementToObjectsArray(itemListArray, inputField);
 
         clearInputField(inputField);
 
