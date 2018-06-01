@@ -1,4 +1,5 @@
 const duplicateMessage = 'This task is already in the list!';
+const unknownActionMessage = 'Unknown action!';
 
 const selectAllStatusForSelectAllButton = 'Select all';
 const deselectAllStatusForSelectAllButton = 'Deselect all';
@@ -10,18 +11,26 @@ const addButton = $('#add_button');
 const deleteAllButton = $('#delete_all_button');
 const chooseAllButton = $('#choose_all_button');
 
-const elementSelector = "tasks__item";
+const elementSelector = "tasks__item item";
 const defaultStatusClassName = 'tasks__item_default';
 const doneStatusClassName = 'tasks__item_done';
-const checkboxClassName = 'item_checkbox';
+const labelForActionsClassName = 'item__label';
+const wrapperForInnerTextClassName = 'item__textwrapper'
+const checkboxClassName = 'item__checkbox';
+const deleteItemButtonClassName = 'item__delete close';
 
 const enterKey = 'Enter';
 const keyEvent = 'keyup';
 
 const defaultStatusForTasks = 'undone';
 const doneStatusForTasks = 'done';
+const toRemoveStatusForTask = 'remove';
+const toKeepStatusForTask = 'keep';
 
 const tagTypeForItems = 'li';
+
+const buttonType = 'button';
+const checkboxType = 'checkbox';
 
 const itemListArray = Array();
 
@@ -48,14 +57,16 @@ function createObjectFromNewValue(inputedValue) {
     return {
         inputedContent: inputedValue,
         statusOfProgress: defaultStatusForTasks,
+        removeStatus: toKeepStatusForTask,
     }
 }
 
 function createHtmlElementFromArrayElement(arrayElement, tag, selector) {
-    let partOfStringWithCheckbox = `<input type="checkbox" class="${checkboxClassName}">`;
+    const partOfStringWithCheckbox = `<input type="checkbox" class="${checkboxClassName}">`;
+    const partOfStringWithDeleteButton = `<button type="button" class="${deleteItemButtonClassName}" aria-label="Close"><span aria-hidden="true">&times;</span></button>`;
+
     let taskStatusSelector = '';
 
-    // if use once again better be as written here
     if (arrayElement.statusOfProgress === defaultStatusForTasks) {
         taskStatusSelector = defaultStatusClassName;
     } else {
@@ -63,14 +74,24 @@ function createHtmlElementFromArrayElement(arrayElement, tag, selector) {
     }
 
     const finalSelectorForTag = selector + ' ' + taskStatusSelector;
+    const groupForCheckboxAndButton = `<div class="${labelForActionsClassName}">${partOfStringWithDeleteButton + partOfStringWithCheckbox}</div>`;
+    const innerWrapperForTextContent = `<div class="${wrapperForInnerTextClassName}">${arrayElement.inputedContent}</div>`;
 
-    return `<${tag} class="${finalSelectorForTag}">`+ partOfStringWithCheckbox + `${arrayElement.inputedContent}` + '<' + "/" + `${tag}>`;
+    const resultHtmlNode = `<${tag} class="${finalSelectorForTag}">`
+                            + groupForCheckboxAndButton
+                            + innerWrapperForTextContent
+                            + '<' + "/" + `${tag}>`;
+    // alert(resultHtmlNode);
+
+    return resultHtmlNode;
 }
 
 function createItemsTagsGroupFromArray(array, tag, selector) {
     let itemsTagged = "";
     for (let i = 0; i < array.length; i++) {
-        itemsTagged += createHtmlElementFromArrayElement(array[i], tag, selector);;
+        if (array[i].removeStatus !== toRemoveStatusForTask) {
+            itemsTagged += createHtmlElementFromArrayElement(array[i], tag, selector);
+        }
     }
     return itemsTagged;
 }
@@ -82,17 +103,17 @@ function withdrawElements(itemList, itemListArray) {
 }
 
 function findItemInArrayWithSameContent(htmlItemContent, itemsListArray) {
-    let foundedElement = _.findWhere(itemsListArray, {inputedContent: htmlItemContent});
+    const foundedElement = _.findWhere(itemsListArray, {inputedContent: htmlItemContent});
     return foundedElement;
 }
 
 function findItemInArrayWithIndex(itemlistArray, chosenObject) {
-    let indexOfFoundedObject = _.indexOf(itemlistArray, chosenObject);
+    const indexOfFoundedObject = _.indexOf(itemlistArray, chosenObject);
     return indexOfFoundedObject;
 }
 
 function addElementToObjectsArray(array, inputField) {
-    let inputedValue = getFormInputValue(inputField);
+    const inputedValue = getFormInputValue(inputField);
     if (inputedValue !== '') {
         if (!findItemInArrayWithSameContent(inputedValue, array)) {
             let newElement = createObjectFromNewValue(inputedValue);
@@ -103,19 +124,30 @@ function addElementToObjectsArray(array, inputField) {
     }
 }
 
-function changeItemStateIfSelected(listItemArray, chosenItemNode, chosenStatus) {
-    let objectEqualsToSelected = findItemInArrayWithSameContent(chosenItemNode.textContent, itemListArray);
-    let indexOfFoundedObject = findItemInArrayWithIndex(itemListArray, objectEqualsToSelected);
-    listItemArray[indexOfFoundedObject].statusOfProgress = chosenStatus;
-    repaintCurrentNode(chosenItemNode, chosenStatus);
-}
-
 function oppositValueFor(selector, firstAlternative, secondAlternative) {
     if (selector === firstAlternative) {
         return secondAlternative;
     } else {
         return firstAlternative;
     }
+}
+
+function changeItemStateIfSelected(elementType, listItemArray, chosenItemNode, chosenStatus) {
+    const objectEqualsToSelected = findItemInArrayWithSameContent(chosenItemNode.textContent, itemListArray);
+    const indexOfFoundedObject = findItemInArrayWithIndex(itemListArray, objectEqualsToSelected);
+
+    switch (elementType) {
+        case buttonType:
+            listItemArray[indexOfFoundedObject].removeStatus = chosenStatus;
+            break;
+        case checkboxType:
+            listItemArray[indexOfFoundedObject].statusOfProgress = chosenStatus;
+            break;
+        default:
+            alert(unknownActionMessage);
+    }
+
+    repaintCurrentNode(chosenItemNode, chosenStatus);
 }
 
 function changeStatusForNode(currentNode, newStatus) {
@@ -143,18 +175,53 @@ function repaintAllNodes(elementSelector, clickedStatus) {
     }
 }
 
-function listenToItemsForClicking(listItemsArray, checkboxSelector) {
-    const checkboxSelectorForJquery = '.' + checkboxSelector;
-    $(checkboxSelectorForJquery).change(function() {
-        let chosenItemNode = this.parentNode;
+function runActionForCheckboxOnChange(checkboxSelector) {
+    const wrapperForInnerTextClassNameForQuerySelector = "." + wrapperForInnerTextClassName;
+
+    $(checkboxSelector).change((e) => {
+
+        // get child, with parent LI node, DIV with inputed text
+        const chosenItemNode = e.target.parentElement.parentElement.querySelector(wrapperForInnerTextClassNameForQuerySelector);
+        // alert(chosenItemNode.textContent);
         let chosenStatus = '';
+        const elementType = checkboxType;
+
         if (this.checked) {
-           chosenStatus = doneStatusForTasks;
+            chosenStatus = doneStatusForTasks;
         } else {
             chosenStatus = defaultStatusForTasks;
         }
-        changeItemStateIfSelected(listItemsArray, chosenItemNode, chosenStatus);
+
+        changeItemStateIfSelected(elementType, itemListArray, chosenItemNode, chosenStatus);
     });
+}
+
+function runActionForDeleteItemButtonOnChange(deleteItemButtonSelector) {
+    // $(deleteItemButtonSelector).click = () => {
+    //     // const chosenItemNode = this.parentNode;
+    //     // const chosenStatus = toRemoveStatusForTask;
+    //     // const elementType = buttonType;
+    //     //
+    //     // changeItemStateIfSelected(elementType, itemListArray, chosenItemNode, chosenStatus);
+    //     alert('clicked');
+    // };
+    // alert($('item__delete').length);
+    // $('.item__').on('click', function(e) {
+    //     // const chosenItemNode = this.parentNode;
+    //     // const chosenStatus = toRemoveStatusForTask;
+    //     // const elementType = buttonType;
+    //     //
+    //     // changeItemStateIfSelected(elementType, itemListArray, chosenItemNode, chosenStatus);
+    //     alert(e.target.innerHTML);
+    // });
+}
+
+function listenToItemsForClicking(listItemsArray, checkboxSelector, deleteItemButtonSelector) {
+    const checkboxSelectorForJquery = '.' + checkboxSelector;
+    const deleteButtonSelectorForJquery = '.' + deleteItemButtonSelector;
+
+    runActionForCheckboxOnChange(checkboxSelectorForJquery);
+    runActionForDeleteItemButtonOnChange(deleteButtonSelectorForJquery);
 }
 
 function deleteAllObjectsFromArray(listItemsArray) {
@@ -190,7 +257,7 @@ $(document).ready(() => {
 
         withdrawElements(itemsList, itemListArray);
 
-        listenToItemsForClicking(itemListArray, checkboxClassName);
+        listenToItemsForClicking(itemListArray, checkboxClassName, deleteItemButtonClassName);
 
         //add event listener to delete buttons
 
@@ -205,8 +272,9 @@ $(document).ready(() => {
     chooseAllButton.click(() => {
         const currentButtonValue = getCurrentButtonValue(chooseAllButton);
         const itemStatus = getStatusForAction(currentButtonValue);
-        repaintAllNodes()
+        repaintAllNodes();
 
+        // withdrawElements()
     });
 
 });
