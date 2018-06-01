@@ -11,7 +11,7 @@ const addButton = $('#add_button');
 const deleteAllButton = $('#delete_all_button');
 const chooseAllButton = $('#choose_all_button');
 
-const elementSelector = "tasks__item item";
+const elementSelector = "tasks__item";
 const parentElementSelector = 'task_list';
 const defaultStatusClassName = 'tasks__item_default';
 const doneStatusClassName = 'tasks__item_done';
@@ -186,6 +186,17 @@ function repaintAllNodes(elementSelector, clickedStatus) {
     }
 }
 
+function updateElement(elementNode) {
+    //find text in elementNode
+    //after refactoring get text content with common syntax
+    const elementNodeTextContent = elementNode.querySelector(wrapperForInnerTextClassName);
+    alert(elementNodeTextContent);
+    const objectEqualsToSelected = findItemInArrayWithSameContent(elementNodeTextContent, itemListArray);
+    const indexOfFoundedObject = findItemInArrayWithIndex(itemListArray, objectEqualsToSelected);
+
+    // itemListArray[indexOfFoundedObject].inputedContent = elementNodeTextContent;
+}
+
 function runActionForCheckboxOnChange(checkboxSelector) {
     const wrapperForInnerTextClassNameForQuerySelector = "." + wrapperForInnerTextClassName;
 
@@ -218,12 +229,25 @@ function runActionForDeleteItemButtonOnChange(deleteItemButtonSelector) {
     });
 }
 
+function runActionToEditOnDoucleClick(elementSelector) {
+    // alert(elementSelector);
+    $(elementSelector).dblclick((e) => {
+        e.stopPropagation();
+        const currentElement = e.target;
+        // alert(currentElement);
+        updateElement(currentElement);
+    });
+
+}
+
 function listenToItemsForClicking(listItemsArray, checkboxSelector, deleteItemButtonSelector) {
     const checkboxSelectorForJquery = '.' + checkboxSelector;
     const deleteButtonSelectorForJquery = '.' + deleteItemButtonSelector;
+    const elementSelectorForJquery = '.' + elementSelector;
 
     runActionForCheckboxOnChange(checkboxSelectorForJquery);
     runActionForDeleteItemButtonOnChange(deleteButtonSelectorForJquery);
+    runActionToEditOnDoucleClick(elementSelectorForJquery);
 }
 
 function deleteAllObjectsFromArray(listItemsArray) {
@@ -260,7 +284,7 @@ $(document).ready(() => {
         withdrawElements(itemsList, itemListArray);
 
         listenToItemsForClicking(itemListArray, checkboxClassName, deleteItemButtonClassName);
-        
+
     });
 
     deleteAllButton.click(() => {
@@ -272,6 +296,9 @@ $(document).ready(() => {
     chooseAllButton.click(() => {
         const currentButtonValue = getCurrentButtonValue(chooseAllButton);
         const itemStatus = getStatusForAction(currentButtonValue);
+
+        // changeItemStateIfSelected(elementType, itemListArray, chosenItemNode, chosenStatus);
+
         repaintAllNodes();
 
         // withdrawElements()
