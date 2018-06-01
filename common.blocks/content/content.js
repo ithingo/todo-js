@@ -17,7 +17,7 @@ const doneStatusClassName = 'tasks__item_done';
 const labelForActionsClassName = 'item__label';
 const wrapperForInnerTextClassName = 'item__textwrapper'
 const checkboxClassName = 'item__checkbox';
-const deleteItemButtonClassName = 'item__delete close';
+const deleteItemButtonClassName = 'item__delete';
 
 const enterKey = 'Enter';
 const keyEvent = 'keyup';
@@ -197,23 +197,16 @@ function runActionForCheckboxOnChange(checkboxSelector) {
 }
 
 function runActionForDeleteItemButtonOnChange(deleteItemButtonSelector) {
-    // $(deleteItemButtonSelector).click = () => {
-    //     // const chosenItemNode = this.parentNode;
-    //     // const chosenStatus = toRemoveStatusForTask;
-    //     // const elementType = buttonType;
-    //     //
-    //     // changeItemStateIfSelected(elementType, itemListArray, chosenItemNode, chosenStatus);
-    //     alert('clicked');
-    // };
-    // alert($('item__delete').length);
-    // $('.item__').on('click', function(e) {
-    //     // const chosenItemNode = this.parentNode;
-    //     // const chosenStatus = toRemoveStatusForTask;
-    //     // const elementType = buttonType;
-    //     //
-    //     // changeItemStateIfSelected(elementType, itemListArray, chosenItemNode, chosenStatus);
-    //     alert(e.target.innerHTML);
-    // });
+    const wrapperForInnerTextClassNameForQuerySelector = "." + wrapperForInnerTextClassName;
+    $(deleteItemButtonSelector).click(function(e) {
+        const chosenItemNode = e.target.parentElement.parentElement.parentElement.querySelector(wrapperForInnerTextClassNameForQuerySelector);
+        const chosenStatus = toRemoveStatusForTask;
+        const elementType = buttonType;
+
+        changeItemStateIfSelected(elementType, itemListArray, chosenItemNode, chosenStatus);
+        // alert(chosenItemNode.innerHTML);
+
+    });
 }
 
 function listenToItemsForClicking(listItemsArray, checkboxSelector, deleteItemButtonSelector) {
