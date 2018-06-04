@@ -22,6 +22,7 @@ const deleteItemButtonClassName = 'item__delete';
 
 const enterKey = 'Enter';
 const keyEvent = 'keyup';
+const mouseClickEvent = 'click';
 
 const defaultStatusForTasks = 'undone';
 const doneStatusForTasks = 'done';
@@ -217,7 +218,7 @@ $(document).ready(() => {
     const deleteButtonSelectorForJquery = '.' + deleteItemButtonClassName;
     const wrapperForInnerTextClassNameForQuerySelector = "." + wrapperForInnerTextClassName;
 
-    $(document).on('click', checkboxSelectorForJquery, (e) => {
+    $(document).on(mouseClickEvent, checkboxSelectorForJquery, (e) => {
         const chosenItemNode = e.target.parentElement.parentElement.querySelector(wrapperForInnerTextClassNameForQuerySelector);
         let chosenStatus = '';
         const elementType = checkboxType;
@@ -231,7 +232,7 @@ $(document).ready(() => {
         changeItemStateIfSelected(elementType, itemListArray, chosenItemNode, chosenStatus);
     });
 
-    $(document).on('click', deleteButtonSelectorForJquery, (e) => {
+    $(document).on(mouseClickEvent, deleteButtonSelectorForJquery, (e) => {
         const chosenItemNode = e.target.parentElement.parentElement.querySelector(wrapperForInnerTextClassNameForQuerySelector);
         let chosenStatus = toRemoveStatusForTask;
         const elementType = buttonType;
