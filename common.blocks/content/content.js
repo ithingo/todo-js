@@ -193,21 +193,20 @@ function getNewValueFromInvokedGhostInputField(currentNode) {
 function updateElement(oldValue, newValue) {
     const objectEqualsToSelected = findItemInArrayWithSameContent(oldValue, itemListArray);
 
-    console.log(objectEqualsToSelected);
+    console.log(objectEqualsToSelected); ////
 
     const indexOfFoundedObject = findItemInArrayWithIndex(itemListArray, objectEqualsToSelected);
 
-    console.log(indexOfFoundedObject);
+    console.log(indexOfFoundedObject); ////
 
     if (newValue !== '') {
         itemListArray[indexOfFoundedObject].inputedContent = newValue;
-        console.log('here!!!');
-        console.log(itemListArray[indexOfFoundedObject]);
+        console.log('here!!!'); ////
+        console.log(itemListArray[indexOfFoundedObject]);   ////
     } else {
         alert('THERE IS NO CHANGE');
     }
 }
-
 
 function deleteAllObjectsFromArray(listItemsArray) {
     listItemsArray.length = 0; //or = [] // Array()
@@ -263,61 +262,63 @@ $(document).ready(() => {
         withdrawElements(itemsList, itemListArray);
     });
 
-    $(document).on('dblclick', wrapperForInnerTextSelectorForQuery, (e) => {
-        let chosenItemNode = e.target.parentElement.querySelector(wrapperForInnerTextSelectorForQuery);
-
-        const oldValue = chosenItemNode.textContent;
-
-        const ghostInputFieldNodeTag = `<input class="${itemGhostInputFieldClassName}" type="text" value="${oldValue}" />`;
-        chosenItemNode.innerHTML = ghostInputFieldNodeTag;
-        alert(chosenItemNode.innerHTML);
-
-        let newValue = '';
-
-        const itemGhostInputFieldSelectorForJquery = '.' + itemGhostInputFieldClassName;
-
-        console.log($(itemGhostInputFieldSelectorForJquery));
-
-        $(itemGhostInputFieldSelectorForJquery).focus();
-        $(itemGhostInputFieldSelectorForJquery).keypress((event) => {
-            if (event.key.toString() === enterKey) {
-                newValue = event.currentTarget.value;
-
-                $(itemGhostInputFieldSelectorForJquery).remove();
-            }
-        });
-
-        alert(newValue);
-
-        // e.preventDefault();
-
-        // const newValue = getNewValueFromInvokedGhostInputField(chosenItemNode);
-
-        if (newValue !== oldValue) {
-            updateElement(oldValue, newValue);
-            withdrawElements(itemsList, itemListArray);
-
-        } else {
-            alert('temporary');
-        }
-
-
-        // function updateVal(currentEle, value) {
-        //     $(currentEle).html(`<input class="${itemGhostInputFieldClassName}" type="text" value="' + value + '" />`);
-        //     $(".thVal").focus();
-        //     $(".thVal").keyup(function (event) {
-        //         if (event.keyCode == 13) {
-        //             $(currentEle).html($(".thVal").val().trim());
-        //         }
-        //     });
-        //
-        //     $(document).click(function () {
-        //         $(currentEle).html($(".thVal").val().trim());
-        //     });
-        // }
-
-        // withdrawElements(itemsList, itemListArray);
-    });
+    // $(document).on('dblclick', wrapperForInnerTextSelectorForQuery, (e) => {
+    //     // e.stopPropagation();
+    //
+    //     let chosenItemNode = e.target.parentElement.querySelector(wrapperForInnerTextSelectorForQuery);
+    //
+    //     const oldValue = chosenItemNode.textContent;
+    //
+    //     const ghostInputFieldNodeTag = `<input class="${itemGhostInputFieldClassName}" type="text" value="${oldValue}" />`;
+    //     chosenItemNode.innerHTML = ghostInputFieldNodeTag;
+    //     alert(chosenItemNode.innerHTML);
+    //
+    //     let newValue = '';
+    //
+    //     const itemGhostInputFieldSelectorForJquery = '.' + itemGhostInputFieldClassName;
+    //
+    //     console.log($(itemGhostInputFieldSelectorForJquery));
+    //
+    //     $(itemGhostInputFieldSelectorForJquery).focus();
+    //     $(itemGhostInputFieldSelectorForJquery).keypress((event) => {
+    //         if (event.key.toString() === enterKey) {
+    //             newValue = event.currentTarget.value;
+    //
+    //             $(itemGhostInputFieldSelectorForJquery).remove();
+    //         }
+    //     });
+    //
+    //     alert(newValue);
+    //
+    //     // e.preventDefault();
+    //
+    //     // const newValue = getNewValueFromInvokedGhostInputField(chosenItemNode);
+    //
+    //     if (newValue !== oldValue) {
+    //         updateElement(oldValue, newValue);
+    //         withdrawElements(itemsList, itemListArray);
+    //
+    //     } else {
+    //         alert('temporary');
+    //     }
+    //
+    //
+    //     // function updateVal(currentEle, value) {
+    //     //     $(currentEle).html(`<input class="${itemGhostInputFieldClassName}" type="text" value="' + value + '" />`);
+    //     //     $(".thVal").focus();
+    //     //     $(".thVal").keyup(function (event) {
+    //     //         if (event.keyCode == 13) {
+    //     //             $(currentEle).html($(".thVal").val().trim());
+    //     //         }
+    //     //     });
+    //     //
+    //     //     $(document).click(function () {
+    //     //         $(currentEle).html($(".thVal").val().trim());
+    //     //     });
+    //     // }
+    //
+    //     // withdrawElements(itemsList, itemListArray);
+    // });
 
     deleteAllButton.click(() => {
         deleteAllObjectsFromArray(itemListArray);
