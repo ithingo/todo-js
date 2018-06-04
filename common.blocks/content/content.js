@@ -1,5 +1,6 @@
 const duplicateMessage = 'This task is already in the list!';
 const unknownActionMessage = 'Unknown action!';
+const emptyInputFieldMessage = 'Empty input field!';
 
 const selectAllStatusForSelectAllButton = 'Select all';
 const deselectAllStatusForSelectAllButton = 'Deselect all';
@@ -7,7 +8,7 @@ const showAllTabName = 'All';
 const showCompletedTabName = 'Completed';
 const showNotCompletedTabName = 'Not completed';
 
-let inputField = document.getElementById('form_input');
+const inputField = document.getElementById('form_input');
 const itemsListParentNode = document.getElementById('task_list');
 
 const addButton = $('#add_button');
@@ -28,6 +29,7 @@ const itemGhostInputFieldClassName = 'item__ghost';
 const enterKey = 'Enter';
 const keyEvent = 'keyup';
 const mouseClickEvent = 'click';
+const mouseDoubleClickEvent = 'dblclick';
 
 const defaultStatusForTasks = 'undone';
 const doneStatusForTasks = 'done';
@@ -199,46 +201,52 @@ function repaintCurrentNodeAfterCheckboxChanged(chosenItemNode, chosenStatus) {
     changeStatusForNode(chosenItemNode, repaintClassName);
 }
 
-// function getNewValueFromInvokedGhostInputField(currentNode) {
-//     const oldValue = currentNode.textContent;
-//     const ghostInputFieldNodeTag = `<input class="${itemGhostInputFieldClassName}" type="text" value="${oldValue}" />`;
-//     currentNode.innerHTML = ghostInputFieldNodeTag;
-//
-//     let newValue = '';
-//
-//     const itemGhostInputFieldSelectorForJquery = '.' + itemGhostInputFieldClassName;
-//
-//     $(itemGhostInputFieldSelectorForJquery).focus();
-//     $(itemGhostInputFieldSelectorForJquery).keypress((e) => {
-//         if (e.key.toString() === enterKey) {
-//             newValue = e.currentTarget.value;
-//
-//             // $(itemGhostInputFieldSelectorForJquery).remove();
-//         }
-//     });
-//
-//     currentNode.innerHTML = 'temp!!!!';
-//
-//     return newValue;
-// }
+function invokeGhostInputField(currentNode) {
+    const oldValue = currentNode.textContent;
+    const ghostInputFieldNodeTag = `<input class="${itemGhostInputFieldClassName}" type="text" value="${oldValue}" />`;
+    // currentNode.innerHTML = ghostInputFieldNodeTag;
+    currentNode.innerHTML = '';
+    $(ghostInputFieldNodeTag).appendTo(currentNode).focus();
 
-// function updateElement(oldValue, newValue) {
-//     const objectEqualsToSelected = findItemInArrayWithSameContent(oldValue, itemListArray);
-//
-//     console.log(objectEqualsToSelected); ////
-//
-//     const indexOfFoundedObject = findItemInArrayWithIndex(itemListArray, objectEqualsToSelected);
-//
-//     console.log(indexOfFoundedObject); ////
-//
-//     if (newValue !== '') {
-//         itemListArray[indexOfFoundedObject].inputedContent = newValue;
-//         console.log('here!!!'); ////
-//         console.log(itemListArray[indexOfFoundedObject]);   ////
-//     } else {
-//         alert('THERE IS NO CHANGE');
-//     }
-// }
+
+
+    // let newValue = '';
+    // //
+    // const ghostInputFieldNode = $(getJqueryFormatSelectorFrom(itemGhostInputFieldClassName));
+    // console.log(ghostInputFieldNode.innerText);
+    //
+    // // ghostInputFieldNode.focus();
+    // ghostInputFieldNode.keypress((e) => {
+    //     if (e.key.toString() === enterKey) {
+    //         newValue = e.currentTarget.value;
+    //
+    //         // $(itemGhostInputFieldSelectorForJquery).remove();
+    //     }
+    // });
+
+    // $("#todolist").on('dblclick', 'span', function () {
+    //     oriVal = $(this).text();
+    //     $(this).text("");
+    //     $("<input type='text'>").appendTo(this).focus();
+    // });
+    // $("#todolist").on('focusout', 'span > input', function () {
+    //     var $this = $(this);
+    //     $this.parent().text($this.val() || oriVal);
+    //     $this.remove(); // Don't just hide, remove the element.
+    // });
+    //
+    // return newValue;
+}
+
+function updateElement(oldValue, newValue) {
+    const objectEqualsToSelected = findItemInArrayWithSameContent(oldValue, itemListArray);
+    const indexOfFoundedObject = findItemInArrayWithIndex(itemListArray, objectEqualsToSelected);
+    if (newValue !== '') {
+        itemListArray[indexOfFoundedObject].inputedContent = newValue;
+    } else {
+        console.log(emptyInputFieldMessage);
+    }
+}
 
 function deleteAllObjectsFromArray(listItemsArray) {
     listItemsArray.length = 0; //or = [] // Array()
@@ -276,12 +284,11 @@ function updateElementsCountForStatus(statusToShow) {
     counterLabelForElementsArraySize.text(counterForElementsByStatus);
 }
 
-$(document).ready(() => {
-    const checkboxSelectorForJquery = '.' + checkboxClassName;
-    const deleteButtonSelectorForJquery = '.' + deleteItemButtonClassName;
-    const wrapperForInnerTextSelectorForQuery = "." + wrapperForInnerTextClassName;
-    const tabsSwitchSelectorForJquery = '.' + tabsSwitchSelector;
+function getJqueryFormatSelectorFrom(plainSelector) {
+    return '.' + plainSelector;
+}
 
+$(document).ready(() => {
     addKeyupEvenListenerForInput(enterKey, keyEvent);
 
     addButton.click(() => {
@@ -291,10 +298,9 @@ $(document).ready(() => {
         updateElementsCountForStatus(defaultStatusForTasksToShow);
     });
 
-    $(document).on(mouseClickEvent, checkboxSelectorForJquery, (e) => {
-        const chosenItemNode = e.target.parentElement.parentElement.querySelector(wrapperForInnerTextSelectorForQuery);
+    $(document).on(mouseClickEvent, getJqueryFormatSelectorFrom(checkboxClassName), (e) => {
+        const chosenItemNode = e.target.parentElement.parentElement.querySelector(getJqueryFormatSelectorFrom(wrapperForInnerTextClassName));
         let chosenStatus = '';
-        const elementType = checkboxType;
 
         if (e.target.checked) {
             chosenStatus = doneStatusForTasks;
@@ -302,79 +308,44 @@ $(document).ready(() => {
             chosenStatus = defaultStatusForTasks;
         }
 
-        changeItemStateIfSelected(elementType, itemListArray, chosenItemNode, chosenStatus);
+        changeItemStateIfSelected(checkboxType, itemListArray, chosenItemNode, chosenStatus);
         updateElementsCountForStatus(defaultStatusForTasksToShow);
     });
 
-    $(document).on(mouseClickEvent, deleteButtonSelectorForJquery, (e) => {
-        const chosenItemNode = e.target.parentElement.parentElement.querySelector(wrapperForInnerTextSelectorForQuery);
+    $(document).on(mouseClickEvent, getJqueryFormatSelectorFrom(deleteItemButtonClassName), (e) => {
+        const chosenItemNode = e.target.parentElement.parentElement.querySelector(getJqueryFormatSelectorFrom(wrapperForInnerTextClassName));
         let chosenStatus = toRemoveStatusForTask;
-        const elementType = buttonType;
 
-        changeItemStateIfSelected(elementType, itemListArray, chosenItemNode, chosenStatus);
-
+        changeItemStateIfSelected(buttonType, itemListArray, chosenItemNode, chosenStatus);
         withdrawElements(itemsListParentNode, itemListArray, defaultStatusForTasksToShow);
-
         updateElementsCountForStatus(defaultStatusForTasksToShow);
     });
 
-    // $(document).on('dblclick', wrapperForInnerTextSelectorForQuery, (e) => {
-    //     // e.stopPropagation();
-    //
-    //     let chosenItemNode = e.target.parentElement.querySelector(wrapperForInnerTextSelectorForQuery);
-    //
-    //     const oldValue = chosenItemNode.textContent;
-    //
-    //     const ghostInputFieldNodeTag = `<input class="${itemGhostInputFieldClassName}" type="text" value="${oldValue}" />`;
-    //     chosenItemNode.innerHTML = ghostInputFieldNodeTag;
-    //     alert(chosenItemNode.innerHTML);
-    //
-    //     let newValue = '';
-    //
-    //     const itemGhostInputFieldSelectorForJquery = '.' + itemGhostInputFieldClassName;
-    //
-    //     console.log($(itemGhostInputFieldSelectorForJquery));
-    //
-    //     $(itemGhostInputFieldSelectorForJquery).focus();
-    //     $(itemGhostInputFieldSelectorForJquery).keypress((event) => {
-    //         if (event.key.toString() === enterKey) {
-    //             newValue = event.currentTarget.value;
-    //
-    //             $(itemGhostInputFieldSelectorForJquery).remove();
-    //         }
-    //     });
-    //
-    //     alert(newValue);
-    //
-    //     // e.preventDefault();
-    //
-    //     // const newValue = getNewValueFromInvokedGhostInputField(chosenItemNode);
-    //
-    //     if (newValue !== oldValue) {
-    //         updateElement(oldValue, newValue);
-    //         withdrawElements(itemsListParentNode, itemListArray);
-    //
-    //     } else {
-    //         alert('temporary');
-    //     }
-    //
-    //
-    //     // function updateVal(currentEle, value) {
-    //     //     $(currentEle).html(`<input class="${itemGhostInputFieldClassName}" type="text" value="' + value + '" />`);
-    //     //     $(".thVal").focus();
-    //     //     $(".thVal").keyup(function (event) {
-    //     //         if (event.keyCode == 13) {
-    //     //             $(currentEle).html($(".thVal").val().trim());
-    //     //         }
-    //     //     });
-    //     //
-    //     //     $(document).click(function () {
-    //     //         $(currentEle).html($(".thVal").val().trim());
-    //     //     });
-    //     // }
-    //
-    //     // withdrawElements(itemsListParentNode, itemListArray);
-    // });
+    $(document).on(mouseDoubleClickEvent, getJqueryFormatSelectorFrom(wrapperForInnerTextClassName), (e) => {
+        e.stopPropagation();
+
+        let chosenItemNode = e.target.parentElement.querySelector(getJqueryFormatSelectorFrom(wrapperForInnerTextClassName));
+        const oldValue = chosenItemNode.textContent;
+
+        invokeGhostInputField(chosenItemNode);
+
+        // $(document).click(function () {
+        //     chosenItemNode.innerHTML = newValue;
+        // });
+        //
+        // if (newValue !== oldValue) {
+        //     updateElement(oldValue, newValue);
+        //     withdrawElements(itemsListParentNode, itemListArray);
+        // } else {
+        //     alert('temporary');
+        // }
+
+        // withdrawElements(itemsListParentNode, itemListArray);
+    });
+
+    $(document).on('keypress', getJqueryFormatSelectorFrom(itemGhostInputFieldClassName), () => {
+        //.....
+    });
 
     deleteAllButton.click(() => {
         deleteAllObjectsFromArray(itemListArray);
@@ -400,7 +371,7 @@ $(document).ready(() => {
         updateElementsCountForStatus(doneStatusForTasksToShow);
     });
 
-    $(document).on(mouseClickEvent, tabsSwitchSelectorForJquery, (e) => {
+    $(document).on(mouseClickEvent, getJqueryFormatSelectorFrom(tabsSwitchSelector), (e) => {
         switch (e.target.innerHTML) {
             case showCompletedTabName:
                 withdrawElements(itemsListParentNode, itemListArray, doneStatusForTasksToShow);
