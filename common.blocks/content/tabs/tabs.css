@@ -1,1 +1,8 @@
 @import url('__link/tabs__link.css');
+
+.tabs {
+    display: flex;
+    flex-direction: row;
+    list-style-type: none;
+    text-align: center;
+}

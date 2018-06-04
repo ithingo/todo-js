@@ -1,5 +1,6 @@
 @import url('form/form.css');
 @import url('tasks/tasks.css');
+@import url('tabs/tabs.css');
 
 .content {
     display: flex;
