@@ -310,33 +310,29 @@ $(document).ready(() => {
         withdrawElements(itemsList, itemListArray);
     });
 
-    $(document).on('click', '', () => {
-        const checkboxSelectorForJquery = '.' + checkboxClassName;
+    const checkboxSelectorForJquery = '.' + checkboxClassName;
+
+    $(document).on('click', checkboxSelectorForJquery, (e) => {
         // const deleteButtonSelectorForJquery = '.' + deleteItemButtonSelector;
         // const elementSelectorForJquery = '.' + elementSelector;
 
 
+
         const wrapperForInnerTextClassNameForQuerySelector = "." + wrapperForInnerTextClassName;
 
-        // $(checkboxSelector).change((e) => {
-        //
-        //     // get child, with parent LI node, DIV with inputed text
-        //     const chosenItemNode = e.target.parentElement.parentElement.querySelector(wrapperForInnerTextClassNameForQuerySelector);
-        //     let chosenStatus = '';
-        //     const elementType = checkboxType;
-        //
-        //     if (this.checked) {
-        //         chosenStatus = doneStatusForTasks;
-        //     } else {
-        //         chosenStatus = defaultStatusForTasks;
-        //     }
-        //
-        //     changeItemStateIfSelected(elementType, itemListArray, chosenItemNode, chosenStatus);
+        // $(checkboxSelectorForJquery).change((e) => {
+            const chosenItemNode = e.target.parentElement.parentElement.querySelector(wrapperForInnerTextClassNameForQuerySelector);
+            let chosenStatus = '';
+            const elementType = checkboxType;
+
+            if (this.checked) {
+                chosenStatus = doneStatusForTasks;
+            } else {
+                chosenStatus = defaultStatusForTasks;
+            }
+
+            changeItemStateIfSelected(elementType, itemListArray, chosenItemNode, chosenStatus);
         // });
-
-        $(document).on('click', checkboxSelectorForJquery, (e) => {
-
-        })
     });
 
     deleteAllButton.click(() => {
