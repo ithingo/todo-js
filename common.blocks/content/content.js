@@ -3,9 +3,12 @@ const unknownActionMessage = 'Unknown action!';
 
 const selectAllStatusForSelectAllButton = 'Select all';
 const deselectAllStatusForSelectAllButton = 'Deselect all';
+const showAllTabName = 'All';
+const showCompletedTabName = 'Completed';
+const showNotCompletedTabName = 'Not completed';
 
 let inputField = document.getElementById('form_input');
-const itemsList = document.getElementById('task_list');
+const itemsListParentNode = document.getElementById('task_list');
 
 const addButton = $('#add_button');
 const deleteAllButton = $('#delete_all_button');
@@ -13,7 +16,6 @@ const chooseAllButton = $('#choose_all_button');
 
 const tabsSwitchSelector = 'tabs__link';
 const elementSelector = 'tasks__item';
-const parentItemsElementSelector = 'task_list';
 const defaultStatusClassName = 'tasks__item_default';
 const doneStatusClassName = 'tasks__item_done';
 const labelForActionsClassName = 'item__label';
@@ -117,10 +119,12 @@ function getItemObjectsByCurrentStatus(itemsArray, statusToShow = defaultStatusF
 }
 
 function createItemsTagsGroupFromArray(array, tag, selector, statusToShow) {
+    const newArray = getItemObjectsByCurrentStatus(array, statusToShow);
+
     let itemsTagged = "";
-    for (let i = 0; i < array.length; i++) {
-        if (array[i].removeStatus !== toRemoveStatusForTask) {
-            itemsTagged += createHtmlElementFromArrayElement(array[i], tag, selector);
+    for (let i = 0; i < newArray.length; i++) {
+        if (newArray[i].removeStatus !== toRemoveStatusForTask) {
+            itemsTagged += createHtmlElementFromArrayElement(newArray[i], tag, selector);
         }
     }
     return itemsTagged;
@@ -194,46 +198,46 @@ function repaintCurrentNodeAfterCheckboxChanged(chosenItemNode, chosenStatus) {
     changeStatusForNode(chosenItemNode, repaintClassName);
 }
 
-function getNewValueFromInvokedGhostInputField(currentNode) {
-    const oldValue = currentNode.textContent;
-    const ghostInputFieldNodeTag = `<input class="${itemGhostInputFieldClassName}" type="text" value="${oldValue}" />`;
-    currentNode.innerHTML = ghostInputFieldNodeTag;
+// function getNewValueFromInvokedGhostInputField(currentNode) {
+//     const oldValue = currentNode.textContent;
+//     const ghostInputFieldNodeTag = `<input class="${itemGhostInputFieldClassName}" type="text" value="${oldValue}" />`;
+//     currentNode.innerHTML = ghostInputFieldNodeTag;
+//
+//     let newValue = '';
+//
+//     const itemGhostInputFieldSelectorForJquery = '.' + itemGhostInputFieldClassName;
+//
+//     $(itemGhostInputFieldSelectorForJquery).focus();
+//     $(itemGhostInputFieldSelectorForJquery).keypress((e) => {
+//         if (e.key.toString() === enterKey) {
+//             newValue = e.currentTarget.value;
+//
+//             // $(itemGhostInputFieldSelectorForJquery).remove();
+//         }
+//     });
+//
+//     currentNode.innerHTML = 'temp!!!!';
+//
+//     return newValue;
+// }
 
-    let newValue = '';
-
-    const itemGhostInputFieldSelectorForJquery = '.' + itemGhostInputFieldClassName;
-
-    $(itemGhostInputFieldSelectorForJquery).focus();
-    $(itemGhostInputFieldSelectorForJquery).keypress((e) => {
-        if (e.key.toString() === enterKey) {
-            newValue = e.currentTarget.value;
-
-            // $(itemGhostInputFieldSelectorForJquery).remove();
-        }
-    });
-
-    currentNode.innerHTML = 'temp!!!!';
-
-    return newValue;
-}
-
-function updateElement(oldValue, newValue) {
-    const objectEqualsToSelected = findItemInArrayWithSameContent(oldValue, itemListArray);
-
-    console.log(objectEqualsToSelected); ////
-
-    const indexOfFoundedObject = findItemInArrayWithIndex(itemListArray, objectEqualsToSelected);
-
-    console.log(indexOfFoundedObject); ////
-
-    if (newValue !== '') {
-        itemListArray[indexOfFoundedObject].inputedContent = newValue;
-        console.log('here!!!'); ////
-        console.log(itemListArray[indexOfFoundedObject]);   ////
-    } else {
-        alert('THERE IS NO CHANGE');
-    }
-}
+// function updateElement(oldValue, newValue) {
+//     const objectEqualsToSelected = findItemInArrayWithSameContent(oldValue, itemListArray);
+//
+//     console.log(objectEqualsToSelected); ////
+//
+//     const indexOfFoundedObject = findItemInArrayWithIndex(itemListArray, objectEqualsToSelected);
+//
+//     console.log(indexOfFoundedObject); ////
+//
+//     if (newValue !== '') {
+//         itemListArray[indexOfFoundedObject].inputedContent = newValue;
+//         console.log('here!!!'); ////
+//         console.log(itemListArray[indexOfFoundedObject]);   ////
+//     } else {
+//         alert('THERE IS NO CHANGE');
+//     }
+// }
 
 function deleteAllObjectsFromArray(listItemsArray) {
     listItemsArray.length = 0; //or = [] // Array()
@@ -251,19 +255,19 @@ function getStatusForAction(currentButtonValueString) {
     }
 }
 
-
 $(document).ready(() => {
+    const checkboxSelectorForJquery = '.' + checkboxClassName;
+    const deleteButtonSelectorForJquery = '.' + deleteItemButtonClassName;
+    const wrapperForInnerTextSelectorForQuery = "." + wrapperForInnerTextClassName;
+    const tabsSwitchSelectorForJquery = '.' + tabsSwitchSelector;
+
     addKeyupEvenListenerForInput(enterKey, keyEvent);
 
     addButton.click(() => {
         addElementToObjectsArray(itemListArray, inputField);
         clearInputField(inputField);
-        withdrawElements(itemsList, itemListArray);
+        withdrawElements(itemsListParentNode, itemListArray, defaultStatusForTasksToShow);
     });
-
-    const checkboxSelectorForJquery = '.' + checkboxClassName;
-    const deleteButtonSelectorForJquery = '.' + deleteItemButtonClassName;
-    const wrapperForInnerTextSelectorForQuery = "." + wrapperForInnerTextClassName;
 
     $(document).on(mouseClickEvent, checkboxSelectorForJquery, (e) => {
         const chosenItemNode = e.target.parentElement.parentElement.querySelector(wrapperForInnerTextSelectorForQuery);
@@ -286,7 +290,7 @@ $(document).ready(() => {
 
         changeItemStateIfSelected(elementType, itemListArray, chosenItemNode, chosenStatus);
 
-        withdrawElements(itemsList, itemListArray);
+        withdrawElements(itemsListParentNode, itemListArray, defaultStatusForTasksToShow);
     });
 
     // $(document).on('dblclick', wrapperForInnerTextSelectorForQuery, (e) => {
@@ -323,7 +327,7 @@ $(document).ready(() => {
     //
     //     if (newValue !== oldValue) {
     //         updateElement(oldValue, newValue);
-    //         withdrawElements(itemsList, itemListArray);
+    //         withdrawElements(itemsListParentNode, itemListArray);
     //
     //     } else {
     //         alert('temporary');
@@ -344,13 +348,12 @@ $(document).ready(() => {
     //     //     });
     //     // }
     //
-    //     // withdrawElements(itemsList, itemListArray);
+    //     // withdrawElements(itemsListParentNode, itemListArray);
     // });
 
     deleteAllButton.click(() => {
         deleteAllObjectsFromArray(itemListArray);
-        withdrawElements(itemsList, itemListArray);
-        // console.log(getItemObjectsByCurrentStatus(itemListArray, doneStatusForTasksToShow));
+        withdrawElements(itemsListParentNode, itemListArray, doneStatusForTasksToShow);   // It doesn't matter what status, the array will be empty anymore
     });
 
     chooseAllButton.click(() => {
@@ -364,6 +367,21 @@ $(document).ready(() => {
 
         const newButtonName = oppositValueFor(currentButtonValue, selectAllStatusForSelectAllButton, deselectAllStatusForSelectAllButton);
         chooseAllButton.html(newButtonName);
-        withdrawElements(itemsList, itemListArray);
+        withdrawElements(itemsListParentNode, itemListArray, doneStatusForTasksToShow);
     });
+
+    $(document).on(mouseClickEvent, tabsSwitchSelectorForJquery, (e) => {
+        switch (e.target.innerHTML) {
+            case showCompletedTabName:
+                withdrawElements(itemsListParentNode, itemListArray, doneStatusForTasksToShow);
+                break;
+            case showNotCompletedTabName:
+                withdrawElements(itemsListParentNode, itemListArray, undoneStatusForTasksToShow);
+                break;
+            case showAllTabName:
+            default:
+                withdrawElements(itemsListParentNode, itemListArray, defaultStatusForTasksToShow);
+                break;
+        }
+    })
 });
