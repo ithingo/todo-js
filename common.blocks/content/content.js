@@ -339,7 +339,10 @@ $(document).ready(() => {
         })
     });
 
-    // deleteAllButton
+    deleteAllButton.click(() => {
+        deleteAllObjectsFromArray(itemListArray);
+        withdrawElements(itemsList, itemListArray);
+    });
 
     chooseAllButton.click(() => {
         const currentButtonValue = getCurrentButtonValue(chooseAllButton);
