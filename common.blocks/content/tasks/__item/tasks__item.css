@@ -13,3 +13,10 @@
     text-decoration: none;
     font-style: normal;
 }
+
+/*
+Temporary, just because of not correct parsing for text content of items containing X button font to mark close button
+*/
+.item__delete {
+    background-image: url("item_delete_button.png");
+}
