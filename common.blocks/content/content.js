@@ -11,8 +11,9 @@ const addButton = $('#add_button');
 const deleteAllButton = $('#delete_all_button');
 const chooseAllButton = $('#choose_all_button');
 
-const elementSelector = "tasks__item";
-const parentElementSelector = 'task_list';
+const tabsSwitchSelector = 'tabs__link';
+const elementSelector = 'tasks__item';
+const parentItemsElementSelector = 'task_list';
 const defaultStatusClassName = 'tasks__item_default';
 const doneStatusClassName = 'tasks__item_done';
 const labelForActionsClassName = 'item__label';
@@ -29,6 +30,10 @@ const defaultStatusForTasks = 'undone';
 const doneStatusForTasks = 'done';
 const toRemoveStatusForTask = 'remove';
 const toKeepStatusForTask = 'keep';
+
+const defaultStatusForTasksToShow = 'all';
+const doneStatusForTasksToShow = 'only_done';
+const undoneStatusForTasksToShow = 'only_undone';
 
 const tagTypeForItems = 'li';
 
@@ -89,7 +94,29 @@ function createHtmlElementFromArrayElement(arrayElement, tag, selector) {
     return resultHtmlNode;
 }
 
-function createItemsTagsGroupFromArray(array, tag, selector) {
+function getArrayByObjectKeyWrapper(itemsArray, key, value) {
+    return _.filter(itemsArray, (element) => {
+        return element[key] === value;
+    });
+}
+
+function getItemObjectsByCurrentStatus(itemsArray, statusToShow = defaultStatusForTasksToShow) {
+    switch (statusToShow) {
+        case doneStatusForTasksToShow:
+            return getArrayByObjectKeyWrapper(itemsArray, 'statusOfProgress', doneStatusForTasks);
+            break;
+        case undoneStatusForTasksToShow:
+            return getArrayByObjectKeyWrapper(itemsArray, 'statusOfProgress', defaultStatusForTasks);
+
+            break;
+        case  defaultStatusForTasksToShow:
+        default:
+            return itemsArray;
+            break;
+    }
+}
+
+function createItemsTagsGroupFromArray(array, tag, selector, statusToShow) {
     let itemsTagged = "";
     for (let i = 0; i < array.length; i++) {
         if (array[i].removeStatus !== toRemoveStatusForTask) {
@@ -99,8 +126,8 @@ function createItemsTagsGroupFromArray(array, tag, selector) {
     return itemsTagged;
 }
 
-function withdrawElements(itemList, itemListArray) {
-    const elementTaggedList = createItemsTagsGroupFromArray(itemListArray, tagTypeForItems, elementSelector);
+function withdrawElements(itemList, itemListArray, itemsStatusToShowWithTabs) {
+    const elementTaggedList = createItemsTagsGroupFromArray(itemListArray, tagTypeForItems, elementSelector, itemsStatusToShowWithTabs);
     itemList.innerHTML = elementTaggedList;
 }
 
@@ -243,7 +270,7 @@ $(document).ready(() => {
         let chosenStatus = '';
         const elementType = checkboxType;
 
-        if (this.checked) {
+        if (e.target.checked) {
             chosenStatus = doneStatusForTasks;
         } else {
             chosenStatus = defaultStatusForTasks;
@@ -323,6 +350,7 @@ $(document).ready(() => {
     deleteAllButton.click(() => {
         deleteAllObjectsFromArray(itemListArray);
         withdrawElements(itemsList, itemListArray);
+        // console.log(getItemObjectsByCurrentStatus(itemListArray, doneStatusForTasksToShow));
     });
 
     chooseAllButton.click(() => {
