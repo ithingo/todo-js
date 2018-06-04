@@ -132,8 +132,6 @@ function oppositValueFor(selector, firstAlternative, secondAlternative) {
 }
 
 function changeItemStateIfSelected(elementType, listItemArray, chosenItemNode, chosenStatus) {
-    // alert(chosenItemNode.textContent);
-
     const objectEqualsToSelected = findItemInArrayWithSameContent(chosenItemNode.textContent, itemListArray);
     const indexOfFoundedObject = findItemInArrayWithIndex(itemListArray, objectEqualsToSelected);
 
@@ -143,12 +141,11 @@ function changeItemStateIfSelected(elementType, listItemArray, chosenItemNode, c
             break;
         case checkboxType:
             listItemArray[indexOfFoundedObject].statusOfProgress = chosenStatus;
+            repaintCurrentNodeAfterCheckboxChanged(chosenItemNode, chosenStatus);
             break;
         default:
             alert(unknownActionMessage);
     }
-
-    repaintCurrentNode(elementType, chosenItemNode, chosenStatus);
 }
 
 function changeStatusForNode(currentNode, newStatus) {
@@ -162,29 +159,9 @@ function changeStatusForNode(currentNode, newStatus) {
     }
 }
 
-function repaintCurrentNode(elementType, chosenItemNode, chosenStatus) {
-    switch (elementType) {
-        case buttonType:
-            // let object = findItemInArrayWithSameContent(chosenItemNode.textContent, itemListArray);
-            // deleteChosenObject(object, itemListArray);
-            break;
-        case checkboxType:
-            const repaintClassName = chosenStatus === defaultStatusForTasks ? defaultStatusClassName : doneStatusClassName;
-            changeStatusForNode(chosenItemNode, repaintClassName);
-            break;
-        default:
-            alert('THERE IS NO SUCH TYPE');
-    }
-}
-
-function repaintAllNodes(elementSelector, clickedStatus) {
-    const repaintClassName = clickedStatus === defaultStatusForTasks ? defaultStatusClassName : doneStatusClassName;
-
-    let listElements = document.getElementsByClassName(elementSelector);
-    alert(listElements);
-    for (let i = 0; i < listElements.size; i++) {
-        changeStatusForNode(listElements[i], repaintClassName);
-    }
+function repaintCurrentNodeAfterCheckboxChanged(chosenItemNode, chosenStatus) {
+    const repaintClassName = chosenStatus === defaultStatusForTasks ? defaultStatusClassName : doneStatusClassName;
+    changeStatusForNode(chosenItemNode, repaintClassName);
 }
 
 function updateElement(elementNode) {
@@ -198,37 +175,6 @@ function updateElement(elementNode) {
     // itemListArray[indexOfFoundedObject].inputedContent = elementNodeTextContent;
 }
 
-// function runActionForCheckboxOnChange(checkboxSelector) {
-//     const wrapperForInnerTextClassNameForQuerySelector = "." + wrapperForInnerTextClassName;
-//
-//     $(checkboxSelector).change((e) => {
-//
-//         // get child, with parent LI node, DIV with inputed text
-//         const chosenItemNode = e.target.parentElement.parentElement.querySelector(wrapperForInnerTextClassNameForQuerySelector);
-//         let chosenStatus = '';
-//         const elementType = checkboxType;
-//
-//         if (this.checked) {
-//             chosenStatus = doneStatusForTasks;
-//         } else {
-//             chosenStatus = defaultStatusForTasks;
-//         }
-//
-//         changeItemStateIfSelected(elementType, itemListArray, chosenItemNode, chosenStatus);
-//     });
-// }
-
-function runActionForDeleteItemButtonOnChange(deleteItemButtonSelector) {
-    const wrapperForInnerTextClassNameForQuerySelector = "." + wrapperForInnerTextClassName;
-    $(deleteItemButtonSelector).click(function(e) {
-        const chosenItemNode = e.target.parentElement.parentElement.parentElement.querySelector(wrapperForInnerTextClassNameForQuerySelector);
-
-        let object = findItemInArrayWithSameContent(chosenItemNode.textContent, itemListArray);
-        deleteChosenObject(object, itemListArray);
-        withdrawElements(itemsList, itemListArray);
-
-    });
-}
 
 function runActionToEditOnDoucleClick(elementSelector) {
     // alert(elementSelector);
@@ -240,26 +186,9 @@ function runActionToEditOnDoucleClick(elementSelector) {
     });
 
 }
-//
-// function listenToItemsForClicking(listItemsArray, checkboxSelector, deleteItemButtonSelector) {
-//     const checkboxSelectorForJquery = '.' + checkboxSelector;
-//     const deleteButtonSelectorForJquery = '.' + deleteItemButtonSelector;
-//     const elementSelectorForJquery = '.' + elementSelector;
-//
-//     runActionForCheckboxOnChange(checkboxSelectorForJquery);
-//     runActionForDeleteItemButtonOnChange(deleteButtonSelectorForJquery);
-//     runActionToEditOnDoucleClick(elementSelectorForJquery);
-// }
 
 function deleteAllObjectsFromArray(listItemsArray) {
     listItemsArray.length = 0; //or = [] // Array()
-}
-
-function deleteChosenObject(chosenObject, listItemsArray) {
-    const indexOfTheObject = findItemInArrayWithIndex(listItemsArray, chosenObject);
-    // listItemsArray[indexOfTheObject] = null;
-    // listItemsArray = _.compact(listItemsArray);
-    listItemsArray[indexOfTheObject].removeStatus = toRemoveStatusForTask;
 }
 
 function getCurrentButtonValue(button) {
@@ -274,36 +203,10 @@ function getStatusForAction(currentButtonValueString) {
     }
 }
 
+
 $(document).ready(() => {
     addKeyupEvenListenerForInput(enterKey, keyEvent);
 
-    // addButton.click(() => {
-    //     addElementToObjectsArray(itemListArray, inputField);
-    //
-    //     clearInputField(inputField);
-    //
-    //     withdrawElements(itemsList, itemListArray);
-    //
-    //     listenToItemsForClicking(itemListArray, checkboxClassName, deleteItemButtonClassName);
-    //
-    // });
-    //
-    // deleteAllButton.click(() => {
-    //     deleteAllObjectsFromArray(itemListArray);
-    //
-    //     withdrawElements(itemsList, itemListArray);
-    // });
-    //
-    // chooseAllButton.click(() => {
-    //     const currentButtonValue = getCurrentButtonValue(chooseAllButton);
-    //     const itemStatus = getStatusForAction(currentButtonValue);
-    //
-    //     // changeItemStateIfSelected(elementType, itemListArray, chosenItemNode, chosenStatus);
-    //
-    //     repaintAllNodes();
-    //
-    //     // withdrawElements()
-    // });
     addButton.click(() => {
         addElementToObjectsArray(itemListArray, inputField);
         clearInputField(inputField);
@@ -315,30 +218,20 @@ $(document).ready(() => {
     const wrapperForInnerTextClassNameForQuerySelector = "." + wrapperForInnerTextClassName;
 
     $(document).on('click', checkboxSelectorForJquery, (e) => {
-        // const deleteButtonSelectorForJquery = '.' + deleteItemButtonSelector;
-        // const elementSelectorForJquery = '.' + elementSelector;
+        const chosenItemNode = e.target.parentElement.parentElement.querySelector(wrapperForInnerTextClassNameForQuerySelector);
+        let chosenStatus = '';
+        const elementType = checkboxType;
 
+        if (this.checked) {
+            chosenStatus = doneStatusForTasks;
+        } else {
+            chosenStatus = defaultStatusForTasks;
+        }
 
-
-
-        // $(checkboxSelectorForJquery).change((e) => {
-            const chosenItemNode = e.target.parentElement.parentElement.querySelector(wrapperForInnerTextClassNameForQuerySelector);
-            let chosenStatus = '';
-            const elementType = checkboxType;
-
-            if (this.checked) {
-                chosenStatus = doneStatusForTasks;
-            } else {
-                chosenStatus = defaultStatusForTasks;
-            }
-
-            changeItemStateIfSelected(elementType, itemListArray, chosenItemNode, chosenStatus);
-        // });
+        changeItemStateIfSelected(elementType, itemListArray, chosenItemNode, chosenStatus);
     });
 
     $(document).on('click', deleteButtonSelectorForJquery, (e) => {
-
-        // $(checkboxSelectorForJquery).change((e) => {
         const chosenItemNode = e.target.parentElement.parentElement.querySelector(wrapperForInnerTextClassNameForQuerySelector);
         let chosenStatus = toRemoveStatusForTask;
         const elementType = buttonType;
