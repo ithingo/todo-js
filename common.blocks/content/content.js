@@ -311,6 +311,8 @@ $(document).ready(() => {
     });
 
     const checkboxSelectorForJquery = '.' + checkboxClassName;
+    const deleteButtonSelectorForJquery = '.' + deleteItemButtonClassName;
+    const wrapperForInnerTextClassNameForQuerySelector = "." + wrapperForInnerTextClassName;
 
     $(document).on('click', checkboxSelectorForJquery, (e) => {
         // const deleteButtonSelectorForJquery = '.' + deleteItemButtonSelector;
@@ -318,7 +320,6 @@ $(document).ready(() => {
 
 
 
-        const wrapperForInnerTextClassNameForQuerySelector = "." + wrapperForInnerTextClassName;
 
         // $(checkboxSelectorForJquery).change((e) => {
             const chosenItemNode = e.target.parentElement.parentElement.querySelector(wrapperForInnerTextClassNameForQuerySelector);
@@ -333,6 +334,18 @@ $(document).ready(() => {
 
             changeItemStateIfSelected(elementType, itemListArray, chosenItemNode, chosenStatus);
         // });
+    });
+
+    $(document).on('click', deleteButtonSelectorForJquery, (e) => {
+
+        // $(checkboxSelectorForJquery).change((e) => {
+        const chosenItemNode = e.target.parentElement.parentElement.querySelector(wrapperForInnerTextClassNameForQuerySelector);
+        let chosenStatus = toRemoveStatusForTask;
+        const elementType = buttonType;
+
+        changeItemStateIfSelected(elementType, itemListArray, chosenItemNode, chosenStatus);
+
+        withdrawElements(itemsList, itemListArray);
     });
 
     deleteAllButton.click(() => {
