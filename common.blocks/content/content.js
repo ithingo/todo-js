@@ -13,6 +13,7 @@ const itemsListParentNode = document.getElementById('task_list');
 const addButton = $('#add_button');
 const deleteAllButton = $('#delete_all_button');
 const chooseAllButton = $('#choose_all_button');
+const counterLabelForElementsArraySize = $('#counter_label');
 
 const tabsSwitchSelector = 'tabs__link';
 const elementSelector = 'tasks__item';
@@ -243,6 +244,21 @@ function deleteAllObjectsFromArray(listItemsArray) {
     listItemsArray.length = 0; //or = [] // Array()
 }
 
+function getElementsCountByStatus(itemsArray, statusToShow) {
+    switch (statusToShow) {
+        case doneStatusForTasksToShow:
+            return getArrayByObjectKeyWrapper(itemsArray, 'statusOfProgress', doneStatusForTasks).length;
+            break;
+        case undoneStatusForTasksToShow:
+            return getArrayByObjectKeyWrapper(itemsArray, 'statusOfProgress', defaultStatusForTasks).length;
+            break;
+        case  defaultStatusForTasksToShow:
+        default:
+            return itemsArray.length;
+            break;
+    }
+}
+
 function getCurrentButtonValue(button) {
     return button.text();
 }
@@ -253,6 +269,11 @@ function getStatusForAction(currentButtonValueString) {
     } else {
         return defaultStatusForTasks;
     }
+}
+
+function updateElementsCountForStatus(statusToShow) {
+    const counterForElementsByStatus = getElementsCountByStatus(itemListArray, statusToShow);
+    counterLabelForElementsArraySize.text(counterForElementsByStatus);
 }
 
 $(document).ready(() => {
@@ -267,6 +288,7 @@ $(document).ready(() => {
         addElementToObjectsArray(itemListArray, inputField);
         clearInputField(inputField);
         withdrawElements(itemsListParentNode, itemListArray, defaultStatusForTasksToShow);
+        updateElementsCountForStatus(defaultStatusForTasksToShow);
     });
 
     $(document).on(mouseClickEvent, checkboxSelectorForJquery, (e) => {
@@ -281,6 +303,7 @@ $(document).ready(() => {
         }
 
         changeItemStateIfSelected(elementType, itemListArray, chosenItemNode, chosenStatus);
+        updateElementsCountForStatus(defaultStatusForTasksToShow);
     });
 
     $(document).on(mouseClickEvent, deleteButtonSelectorForJquery, (e) => {
@@ -291,6 +314,8 @@ $(document).ready(() => {
         changeItemStateIfSelected(elementType, itemListArray, chosenItemNode, chosenStatus);
 
         withdrawElements(itemsListParentNode, itemListArray, defaultStatusForTasksToShow);
+
+        updateElementsCountForStatus(defaultStatusForTasksToShow);
     });
 
     // $(document).on('dblclick', wrapperForInnerTextSelectorForQuery, (e) => {
@@ -354,6 +379,8 @@ $(document).ready(() => {
     deleteAllButton.click(() => {
         deleteAllObjectsFromArray(itemListArray);
         withdrawElements(itemsListParentNode, itemListArray, doneStatusForTasksToShow);   // It doesn't matter what status, the array will be empty anymore
+
+        updateElementsCountForStatus(doneStatusForTasksToShow);
     });
 
     chooseAllButton.click(() => {
@@ -367,20 +394,26 @@ $(document).ready(() => {
 
         const newButtonName = oppositValueFor(currentButtonValue, selectAllStatusForSelectAllButton, deselectAllStatusForSelectAllButton);
         chooseAllButton.html(newButtonName);
+
         withdrawElements(itemsListParentNode, itemListArray, doneStatusForTasksToShow);
+
+        updateElementsCountForStatus(doneStatusForTasksToShow);
     });
 
     $(document).on(mouseClickEvent, tabsSwitchSelectorForJquery, (e) => {
         switch (e.target.innerHTML) {
             case showCompletedTabName:
                 withdrawElements(itemsListParentNode, itemListArray, doneStatusForTasksToShow);
+                updateElementsCountForStatus(doneStatusForTasksToShow);
                 break;
             case showNotCompletedTabName:
                 withdrawElements(itemsListParentNode, itemListArray, undoneStatusForTasksToShow);
+                updateElementsCountForStatus(undoneStatusForTasksToShow);
                 break;
             case showAllTabName:
             default:
                 withdrawElements(itemsListParentNode, itemListArray, defaultStatusForTasksToShow);
+                updateElementsCountForStatus(defaultStatusForTasksToShow);
                 break;
         }
     })
