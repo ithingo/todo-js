@@ -1,54 +1,55 @@
-const duplicateMessage = 'This task is already in the list!';
-const unknownActionMessage = 'Unknown action!';
-const emptyInputFieldMessage = 'Empty input field!';
+const duplicateMessage = "This task is already in the list!";
+const unknownActionMessage = "Unknown action!";
+const emptyInputFieldMessage = "Empty input field!";
 
-const selectAllStatusForSelectAllButton = 'Select all';
-const deselectAllStatusForSelectAllButton = 'Deselect all';
-const showAllTabName = 'All';
-const showCompletedTabName = 'Completed';
-const showNotCompletedTabName = 'Not completed';
+const selectAllStatusForSelectAllButton = "Select all";
+const deselectAllStatusForSelectAllButton = "Deselect all";
+const showAllTabName = "All";
+const showCompletedTabName = "Completed";
+const showNotCompletedTabName = "Not completed";
 
-const inputField = document.getElementById('form_input');
-const itemsListParentNode = document.getElementById('task_list');
+const inputField = document.getElementById("form_input");
+const itemsListParentNode = document.getElementById("task_list");
 
-const addButton = $('#add_button');
-const deleteAllButton = $('#delete_all_button');
-const chooseAllButton = $('#choose_all_button');
-const counterLabelForElementsArraySize = $('#counter_label');
+const addButton = $("#add_button");
+const deleteAllButton = $("#delete_all_button");
+const chooseAllButton = $("#choose_all_button");
+const counterLabelForElementsArraySize = $("#counter_label");
 
-const tabsSwitchSelector = 'tabs__link';
-const elementSelector = 'tasks__item';
-const defaultStatusClassName = 'tasks__item_default';
-const doneStatusClassName = 'tasks__item_done';
-const labelForActionsClassName = 'item__label';
-const wrapperForInnerTextClassName = 'item__textwrapper';
-const checkboxClassName = 'item__checkbox';
-const deleteItemButtonClassName = 'item__delete';
-const itemGhostInputFieldClassName = 'item__ghost';
+const tabsSwitchSelector = "tabs__link";
+const elementSelector = "tasks__item";
+const defaultStatusClassName = "tasks__item_default";
+const doneStatusClassName = "tasks__item_done";
+const labelForActionsClassName = "item__label";
+const wrapperForInnerTextClassName = "item__textwrapper";
+const checkboxClassName = "item__checkbox";
+const deleteItemButtonClassName = "item__delete";
+const itemGhostInputFieldClassName = "item__ghost";
 
 const enterKey = 13;
-const keyEvent = 'keyup';
-const mouseClickEvent = 'click';
-const mouseDoubleClickEvent = 'dblclick';
+const keyEvent = "keyup";
+const mouseClickEvent = "click";
+const mouseDoubleClickEvent = "dblclick";
 
-const defaultStatusForTasks = 'undone';
-const doneStatusForTasks = 'done';
-const toRemoveStatusForTask = 'remove';
-const toKeepStatusForTask = 'keep';
+const defaultStatusForTasks = "undone";
+const doneStatusForTasks = "done";
+const toRemoveStatusForTask = "remove";
+const toKeepStatusForTask = "keep";
 
-const defaultStatusForTasksToShow = 'all';
-const doneStatusForTasksToShow = 'only_done';
-const undoneStatusForTasksToShow = 'only_undone';
+const defaultStatusForTasksToShow = "all";
+const doneStatusForTasksToShow = "only_done";
+const undoneStatusForTasksToShow = "only_undone";
 
-const tagTypeForItems = 'li';
+const tagTypeForItems = "li";
 
-const buttonType = 'button';
-const checkboxType = 'checkbox';
+const buttonType = "button";
+const checkboxType = "checkbox";
 
 const itemListArray = Array();
 
+const itemsOnOnePageCount = 5;
+
 function addKeyupEvenListenerForInput(key, eventNameForKey) {
-    'use strict';
     inputField.focus();
     inputField.addEventListener(eventNameForKey, (e) => {
         e.preventDefault();
@@ -59,18 +60,7 @@ function addKeyupEvenListenerForInput(key, eventNameForKey) {
     });
 }
 
-function getFormInputValue(inputField) {
-    'use strict';
-    return inputField.value;
-}
-
-function clearInputField(inputField) {
-    'use strict';
-    inputField.value = "";
-}
-
 function createObjectFromNewValue(inputedValue) {
-    'use strict';
     return {
         inputedContent: inputedValue,
         statusOfProgress: defaultStatusForTasks,
@@ -79,11 +69,10 @@ function createObjectFromNewValue(inputedValue) {
 }
 
 function createHtmlElementFromArrayElement(arrayElement, tag, selector) {
-    'use strict';
     const partOfStringWithCheckbox = `<input type="checkbox" class="${checkboxClassName}">`;
     const partOfStringWithDeleteButton = `<button type="button" class="${deleteItemButtonClassName}" aria-label="Close"></button>`;
 
-    let taskStatusSelector = '';
+    let taskStatusSelector = "";
 
     if (arrayElement.statusOfProgress === defaultStatusForTasks) {
         taskStatusSelector = defaultStatusClassName;
@@ -91,14 +80,14 @@ function createHtmlElementFromArrayElement(arrayElement, tag, selector) {
         taskStatusSelector = doneStatusClassName;
     }
 
-    const finalSelectorForTag = selector + ' ' + taskStatusSelector;
+    const finalSelectorForTag = selector + " " + taskStatusSelector;
     const groupForCheckboxAndButton = `<div class="${labelForActionsClassName}">${partOfStringWithDeleteButton + partOfStringWithCheckbox}</div>`;
     const innerWrapperForTextContent = `<div class="${wrapperForInnerTextClassName}">${arrayElement.inputedContent}</div>`;
 
     const resultHtmlNode = `<${tag} class="${finalSelectorForTag}">`
                             + groupForCheckboxAndButton
                             + innerWrapperForTextContent
-                            + '<' + "/" + `${tag}>`;
+                            + "<" + "/" + `${tag}>`;
 
     return resultHtmlNode;
 }
@@ -112,10 +101,10 @@ function getArrayByObjectKeyWrapper(itemsArray, key, value) {
 function getItemObjectsByCurrentStatus(itemsArray, statusToShow = defaultStatusForTasksToShow) {
     switch (statusToShow) {
         case doneStatusForTasksToShow:
-            return getArrayByObjectKeyWrapper(itemsArray, 'statusOfProgress', doneStatusForTasks);
+            return getArrayByObjectKeyWrapper(itemsArray, "statusOfProgress", doneStatusForTasks);
             break;
         case undoneStatusForTasksToShow:
-            return getArrayByObjectKeyWrapper(itemsArray, 'statusOfProgress', defaultStatusForTasks);
+            return getArrayByObjectKeyWrapper(itemsArray, "statusOfProgress", defaultStatusForTasks);
 
             break;
         case  defaultStatusForTasksToShow:
@@ -142,20 +131,11 @@ function withdrawElements(itemList, itemListArray, itemsStatusToShowWithTabs) {
     itemList.innerHTML = elementTaggedList;
 }
 
-function findItemInArrayWithSameContent(htmlItemContent, itemsListArray) {
-    const foundedElement = _.findWhere(itemsListArray, {inputedContent: htmlItemContent});
-    return foundedElement;
-}
-
-function findItemInArrayWithIndex(itemlistArray, chosenObject) {
-    const indexOfFoundedObject = _.indexOf(itemlistArray, chosenObject);
-    return indexOfFoundedObject;
-}
-
 function addElementToObjectsArray(array, inputField) {
-    const inputedValue = getFormInputValue(inputField);
-    if (inputedValue !== '') {
-        if (!findItemInArrayWithSameContent(inputedValue, array)) {
+    const inputedValue = inputField.value;
+    if (inputedValue !== "") {
+        const foundedObject = _.findWhere(array, {inputedContent: inputedValue});
+        if (!foundedObject) {
             let newElement = createObjectFromNewValue(inputedValue);
             array.push(newElement);
         } else {
@@ -173,8 +153,8 @@ function oppositValueFor(selector, firstAlternative, secondAlternative) {
 }
 
 function changeItemStateIfSelected(elementType, listItemArray, chosenItemNode, chosenStatus) {
-    const objectEqualsToSelected = findItemInArrayWithSameContent(chosenItemNode.textContent, itemListArray);
-    const indexOfFoundedObject = findItemInArrayWithIndex(itemListArray, objectEqualsToSelected);
+    const objectEqualsToSelected = _.findWhere(itemListArray, {inputedContent: chosenItemNode.textContent});
+    const indexOfFoundedObject = _.indexOf(itemListArray, objectEqualsToSelected);
 
     switch (elementType) {
         case buttonType:
@@ -206,9 +186,10 @@ function repaintCurrentNodeAfterCheckboxChanged(chosenItemNode, chosenStatus) {
 }
 
 function updateElement(oldValue, newValue) {
-    const objectEqualsToSelected = findItemInArrayWithSameContent(oldValue, itemListArray);
-    const indexOfFoundedObject = findItemInArrayWithIndex(itemListArray, objectEqualsToSelected);
-    if (newValue !== '') {
+    const objectEqualsToSelected = _.findWhere(itemListArray, {inputedContent: oldValue});
+    const indexOfFoundedObject = _.indexOf(itemListArray, objectEqualsToSelected);
+
+    if (newValue !== "") {
         itemListArray[indexOfFoundedObject].inputedContent = newValue;
     } else {
         alert(emptyInputFieldMessage);
@@ -222,20 +203,16 @@ function deleteAllObjectsFromArray(listItemsArray) {
 function getElementsCountByStatus(itemsArray, statusToShow) {
     switch (statusToShow) {
         case doneStatusForTasksToShow:
-            return getArrayByObjectKeyWrapper(itemsArray, 'statusOfProgress', doneStatusForTasks).length;
+            return getArrayByObjectKeyWrapper(itemsArray, "statusOfProgress", doneStatusForTasks).length;
             break;
         case undoneStatusForTasksToShow:
-            return getArrayByObjectKeyWrapper(itemsArray, 'statusOfProgress', defaultStatusForTasks).length;
+            return getArrayByObjectKeyWrapper(itemsArray, "statusOfProgress", defaultStatusForTasks).length;
             break;
         case  defaultStatusForTasksToShow:
         default:
             return itemsArray.length;
             break;
     }
-}
-
-function getCurrentButtonValue(button) {
-    return button.text();
 }
 
 function getStatusForAction(currentButtonValueString) {
@@ -252,7 +229,7 @@ function updateElementsCountForStatus(statusToShow) {
 }
 
 function getJqueryFormatSelectorFrom(plainSelector) {
-    return '.' + plainSelector;
+    return "." + plainSelector;
 }
 
 $(document).ready(() => {
@@ -260,14 +237,14 @@ $(document).ready(() => {
 
     addButton.click(() => {
         addElementToObjectsArray(itemListArray, inputField);
-        clearInputField(inputField);
+        inputField.value = "";
         withdrawElements(itemsListParentNode, itemListArray, defaultStatusForTasksToShow);
         updateElementsCountForStatus(defaultStatusForTasksToShow);
     });
 
     $(document).on(mouseClickEvent, getJqueryFormatSelectorFrom(checkboxClassName), (e) => {
         const chosenItemNode = e.target.parentElement.parentElement.querySelector(getJqueryFormatSelectorFrom(wrapperForInnerTextClassName));
-        let chosenStatus = '';
+        let chosenStatus = "";
 
         if (e.target.checked) {
             chosenStatus = doneStatusForTasks;
@@ -291,7 +268,7 @@ $(document).ready(() => {
     $(document).on(mouseDoubleClickEvent, getJqueryFormatSelectorFrom(wrapperForInnerTextClassName), function(event) {
         const chosenItemNode = event.target.parentElement.querySelector(getJqueryFormatSelectorFrom(wrapperForInnerTextClassName));
         let oldValue = chosenItemNode.innerText;
-        chosenItemNode.innerHTML = '';
+        chosenItemNode.innerHTML = "";
 
         const ghostInputFieldNodeTag = `<input class="${itemGhostInputFieldClassName}" type="text" value="${oldValue}" />`;
         $(chosenItemNode).append(ghostInputFieldNodeTag);
@@ -303,11 +280,7 @@ $(document).ready(() => {
             oldValue = e.target.value;
         });
 
-        let newValue = '';
-
-        $(getJqueryFormatSelectorFrom(itemGhostInputFieldClassName)).blur(function(e) {
-            //....
-        });
+        let newValue = "";
 
         $(getJqueryFormatSelectorFrom(itemGhostInputFieldClassName)).keyup(function(e) {
             if (e.which === enterKey) {
@@ -317,7 +290,6 @@ $(document).ready(() => {
                 updateElementsCountForStatus(defaultStatusForTasksToShow);
             }
         });
-
     });
 
     deleteAllButton.click(() => {
@@ -327,7 +299,7 @@ $(document).ready(() => {
     });
 
     chooseAllButton.click(() => {
-        const currentButtonValue = getCurrentButtonValue(chooseAllButton);
+        const currentButtonValue = chooseAllButton.text();
         const itemStatus = getStatusForAction(currentButtonValue);
 
         const itemNodeList = document.getElementsByClassName(elementSelector);
