@@ -47,7 +47,7 @@ const checkboxType = "checkbox";
 
 const itemListArray = Array();
 
-const itemsOnOnePageCount = 5;
+// const itemsOnOnePageCount = 5;
 
 function addKeyupEvenListenerForInput(key, eventNameForKey) {
     inputField.focus();
@@ -130,6 +130,10 @@ function withdrawElements(itemList, itemListArray, itemsStatusToShowWithTabs) {
     const elementTaggedList = createItemsTagsGroupFromArray(itemListArray, tagTypeForItems, elementSelector, itemsStatusToShowWithTabs);
     itemList.innerHTML = elementTaggedList;
 }
+
+// function getPartOfArrayForPagination(itemsOnePageCount, pageNumber) {
+//     alert(`${itemsOnePageCount * pageNumber - 1} -> ${itemsOnePageCount * pageNumber - 1 - 4}`)
+// }
 
 function addElementToObjectsArray(array, inputField) {
     const inputedValue = inputField.value;
@@ -293,6 +297,8 @@ $(document).ready(() => {
     });
 
     deleteAllButton.click(() => {
+        // getPartOfArrayForPagination(itemsOnOnePageCount, 2);
+        //
         deleteAllObjectsFromArray(itemListArray);
         withdrawElements(itemsListParentNode, itemListArray, doneStatusForTasksToShow);   // It doesn't matter what status, the array will be empty anymore
         updateElementsCountForStatus(doneStatusForTasksToShow);
