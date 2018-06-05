@@ -21,12 +21,12 @@ const elementSelector = 'tasks__item';
 const defaultStatusClassName = 'tasks__item_default';
 const doneStatusClassName = 'tasks__item_done';
 const labelForActionsClassName = 'item__label';
-const wrapperForInnerTextClassName = 'item__textwrapper'
+const wrapperForInnerTextClassName = 'item__textwrapper';
 const checkboxClassName = 'item__checkbox';
 const deleteItemButtonClassName = 'item__delete';
 const itemGhostInputFieldClassName = 'item__ghost';
 
-const enterKey = 'Enter';
+const enterKey = 13;
 const keyEvent = 'keyup';
 const mouseClickEvent = 'click';
 const mouseDoubleClickEvent = 'dblclick';
@@ -48,34 +48,38 @@ const checkboxType = 'checkbox';
 const itemListArray = Array();
 
 function addKeyupEvenListenerForInput(key, eventNameForKey) {
+    'use strict';
     inputField.focus();
     inputField.addEventListener(eventNameForKey, (e) => {
         e.preventDefault();
 
-        //keCode is deprecated, use instead the value for entered key
-        if (e.key.toString() === key) {
+        if (e.which === key) {
             addButton.click();
         }
-    })
+    });
 }
 
 function getFormInputValue(inputField) {
+    'use strict';
     return inputField.value;
 }
 
 function clearInputField(inputField) {
+    'use strict';
     inputField.value = "";
 }
 
 function createObjectFromNewValue(inputedValue) {
+    'use strict';
     return {
         inputedContent: inputedValue,
         statusOfProgress: defaultStatusForTasks,
         removeStatus: toKeepStatusForTask,
-    }
+    };
 }
 
 function createHtmlElementFromArrayElement(arrayElement, tag, selector) {
+    'use strict';
     const partOfStringWithCheckbox = `<input type="checkbox" class="${checkboxClassName}">`;
     const partOfStringWithDeleteButton = `<button type="button" class="${deleteItemButtonClassName}" aria-label="Close"></button>`;
 
@@ -201,50 +205,13 @@ function repaintCurrentNodeAfterCheckboxChanged(chosenItemNode, chosenStatus) {
     changeStatusForNode(chosenItemNode, repaintClassName);
 }
 
-function invokeGhostInputField(currentNode) {
-    const oldValue = currentNode.textContent;
-    const ghostInputFieldNodeTag = `<input class="${itemGhostInputFieldClassName}" type="text" value="${oldValue}" />`;
-    // currentNode.innerHTML = ghostInputFieldNodeTag;
-    currentNode.innerHTML = '';
-    $(ghostInputFieldNodeTag).appendTo(currentNode).focus();
-
-
-
-    // let newValue = '';
-    // //
-    // const ghostInputFieldNode = $(getJqueryFormatSelectorFrom(itemGhostInputFieldClassName));
-    // console.log(ghostInputFieldNode.innerText);
-    //
-    // // ghostInputFieldNode.focus();
-    // ghostInputFieldNode.keypress((e) => {
-    //     if (e.key.toString() === enterKey) {
-    //         newValue = e.currentTarget.value;
-    //
-    //         // $(itemGhostInputFieldSelectorForJquery).remove();
-    //     }
-    // });
-
-    // $("#todolist").on('dblclick', 'span', function () {
-    //     oriVal = $(this).text();
-    //     $(this).text("");
-    //     $("<input type='text'>").appendTo(this).focus();
-    // });
-    // $("#todolist").on('focusout', 'span > input', function () {
-    //     var $this = $(this);
-    //     $this.parent().text($this.val() || oriVal);
-    //     $this.remove(); // Don't just hide, remove the element.
-    // });
-    //
-    // return newValue;
-}
-
 function updateElement(oldValue, newValue) {
     const objectEqualsToSelected = findItemInArrayWithSameContent(oldValue, itemListArray);
     const indexOfFoundedObject = findItemInArrayWithIndex(itemListArray, objectEqualsToSelected);
     if (newValue !== '') {
         itemListArray[indexOfFoundedObject].inputedContent = newValue;
     } else {
-        console.log(emptyInputFieldMessage);
+        alert(emptyInputFieldMessage);
     }
 }
 
@@ -321,36 +288,41 @@ $(document).ready(() => {
         updateElementsCountForStatus(defaultStatusForTasksToShow);
     });
 
-    $(document).on(mouseDoubleClickEvent, getJqueryFormatSelectorFrom(wrapperForInnerTextClassName), (e) => {
-        e.stopPropagation();
+    $(document).on(mouseDoubleClickEvent, getJqueryFormatSelectorFrom(wrapperForInnerTextClassName), function(event) {
+        const chosenItemNode = event.target.parentElement.querySelector(getJqueryFormatSelectorFrom(wrapperForInnerTextClassName));
+        let oldValue = chosenItemNode.innerText;
+        chosenItemNode.innerHTML = '';
 
-        let chosenItemNode = e.target.parentElement.querySelector(getJqueryFormatSelectorFrom(wrapperForInnerTextClassName));
-        const oldValue = chosenItemNode.textContent;
+        const ghostInputFieldNodeTag = `<input class="${itemGhostInputFieldClassName}" type="text" value="${oldValue}" />`;
+        $(chosenItemNode).append(ghostInputFieldNodeTag);
 
-        invokeGhostInputField(chosenItemNode);
+        const ghostInput = event.target.parentElement.querySelector(getJqueryFormatSelectorFrom(itemGhostInputFieldClassName));
+        ghostInput.focus();
 
-        // $(document).click(function () {
-        //     chosenItemNode.innerHTML = newValue;
-        // });
-        //
-        // if (newValue !== oldValue) {
-        //     updateElement(oldValue, newValue);
-        //     withdrawElements(itemsListParentNode, itemListArray);
-        // } else {
-        //     alert('temporary');
-        // }
+        $(getJqueryFormatSelectorFrom(itemGhostInputFieldClassName)).focus(function(e) {
+            oldValue = e.target.value;
+        });
 
-        // withdrawElements(itemsListParentNode, itemListArray);
-    });
+        let newValue = '';
 
-    $(document).on('keypress', getJqueryFormatSelectorFrom(itemGhostInputFieldClassName), () => {
-        //.....
+        $(getJqueryFormatSelectorFrom(itemGhostInputFieldClassName)).blur(function(e) {
+            //....
+        });
+
+        $(getJqueryFormatSelectorFrom(itemGhostInputFieldClassName)).keyup(function(e) {
+            if (e.which === enterKey) {
+                newValue = e.target.value;
+                updateElement(oldValue, newValue);
+                withdrawElements(itemsListParentNode, itemListArray, defaultStatusForTasksToShow);
+                updateElementsCountForStatus(defaultStatusForTasksToShow);
+            }
+        });
+
     });
 
     deleteAllButton.click(() => {
         deleteAllObjectsFromArray(itemListArray);
         withdrawElements(itemsListParentNode, itemListArray, doneStatusForTasksToShow);   // It doesn't matter what status, the array will be empty anymore
-
         updateElementsCountForStatus(doneStatusForTasksToShow);
     });
 
@@ -367,7 +339,6 @@ $(document).ready(() => {
         chooseAllButton.html(newButtonName);
 
         withdrawElements(itemsListParentNode, itemListArray, doneStatusForTasksToShow);
-
         updateElementsCountForStatus(doneStatusForTasksToShow);
     });
 
@@ -387,5 +358,5 @@ $(document).ready(() => {
                 updateElementsCountForStatus(defaultStatusForTasksToShow);
                 break;
         }
-    })
+    });
 });
