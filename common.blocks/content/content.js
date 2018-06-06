@@ -108,16 +108,29 @@ function getCurrentPageNumber(array) {
    return Math.ceil(array.length / itemsOnOnePageCount);
 }
 
-function setActiveStateForPageNumber(pageNumber = defaultPageNumber) {
-    const pageNodes = document.getElementsByClassName(paginationPageLinkClassName);
-    for (let i = 0; i < pageNodes.length; i++) {
-        if (pageNodes[i].hasAttribute("id")) {
-            pageNodes[i].removeAttribute("id");
+function getPageNumberForElementIndexWhenDelete(elementContent, array) {
+    const indexOfFoundedObject = _.findIndex(array, ["inputedContent", elementContent]);
+    
+}
+
+function setActiveStateForPageNumber(pageNumber, invokeState = "non-initial") {
+    // if (invokeState === "non-initial") {
+        const pageNodes = document.getElementsByClassName(paginationPageLinkClassName);
+        for (let i = 0; i < pageNodes.length; i++) {
+            if (pageNodes[i].hasAttribute("id")) {
+                pageNodes[i].removeAttribute("id");
+            }
+            if (pageNodes[i].textContent === pageNumber.toString()) {
+                pageNodes[i].setAttribute("id", currentPageId);
+            }
         }
-        if (pageNodes[i].textContent === pageNumber.toString()) {
-            pageNodes[i].setAttribute("id", currentPageId);
-        }
-    }
+    // } else { // initial state, before element adding
+    //     const paginationLinksString = createPaginationLinks(pageNumber, tagTypeForItems);
+    //     paginationPannel.html("");
+    //     paginationPannel.append(paginationLinksString);
+
+    //     $(getJqueryFormatSelectorFrom(paginationPageLinkClassName)).attr("id", currentPageId);
+    // }
 }
 
 function getArrayByObjectKeyWrapper(itemsArray, key, value) {
@@ -167,14 +180,10 @@ function getPartOfArrayForPagination(itemsArray, itemsOnePageCount, pageNumber) 
     let startIndex = itemsArray.length - (itemsArray.length - itemsOnePageCount * (pageNumber - 1));
     let endIndex = startIndex + itemsOnePageCount;
 
-    // console.log(itemsArray.length - itemsOnePageCount * (pageNumber - 1));
-    // console.log(startIndex, endIndex);
-
     if (endIndex >= itemsArray.length) {
         endIndex = itemsArray.length;
     }
 
-    // console.log(startIndex, endIndex);
     const partOfArray = _.slice(itemsArray, startIndex, endIndex);
     return partOfArray;
 }
@@ -278,23 +287,29 @@ function getJqueryFormatSelectorFrom(plainSelector) {
     return "." + plainSelector;
 }
 
-function withdrawPaginationPannel(itemListArray, activePage) {
-    let currentPageNumber = 0;
-    if (activePage === 0) { //without onclick by on pagination panel
-        currentPageNumber = getCurrentPageNumber(itemListArray);
-        const paginationLinksString = createPaginationLinks(currentPageNumber, tagTypeForItems);
-        paginationPannel.html("");
-        paginationPannel.append(paginationLinksString);
-    } else {
-        currentPageNumber = activePage;
-    }
+function withdrawPaginationPannel(itemListArray, activePageNumber) {
+    const currentPageNumber = getCurrentPageNumber(itemListArray);
+    const paginationLinksString = createPaginationLinks(currentPageNumber, tagTypeForItems);
+    paginationPannel.html("");
+    paginationPannel.append(paginationLinksString);
 
     setActiveStateForPageNumber(currentPageNumber);
 }
 
-function showItemListWithPaginationDevision(array, itemStatus, activePage = 0) {
-    withdrawElements(itemsListParentNode, array, itemStatus);
-    withdrawPaginationPannel(array, activePage);
+function showItemListWithPaginationDevision(array, itemStatus, activePageNumber = 0) {
+    let currentPageNumber = '';
+
+    if (activePageNumber !== 0) {
+        currentPageNumber = activePageNumber;
+    } else {
+        currentPageNumber = parseInt(document.getElementById(currentPageId).textContent);
+        alert(currentPageNumber);
+    }
+
+    const currentPageItemArray = getPartOfArrayForPagination(array, itemsOnOnePageCount, activePageNumber);
+
+    withdrawElements(itemsListParentNode, currentPageItemArray, itemStatus);
+    withdrawPaginationPannel(itemListArray, activePageNumber);
 
     updateElementsCountForStatus(itemStatus);
 }
@@ -306,7 +321,8 @@ $(document).ready(() => {
         addElementToObjectsArray(itemListArray, inputField);
         inputField.value = "";
 
-        showItemListWithPaginationDevision(itemListArray, defaultStatusForTasksToShow);
+        const currentPageNumber = getCurrentPageNumber(itemListArray);
+        showItemListWithPaginationDevision(itemListArray, defaultStatusForTasksToShow, currentPageNumber);
     });
 
     $(document).on("click", getJqueryFormatSelectorFrom(checkboxClassName), (e) => {
@@ -325,11 +341,14 @@ $(document).ready(() => {
 
     $(document).on("click", getJqueryFormatSelectorFrom(deleteItemButtonClassName), (e) => {
         const chosenItemNode = e.target.parentElement.parentElement.querySelector(getJqueryFormatSelectorFrom(wrapperForInnerTextClassName));
-        let chosenStatus = toRemoveStatusForTask;
+        const chosenStatus = toRemoveStatusForTask;
+        const currentPageNumber = parseInt(document.getElementById(currentPageId).textContent);
+        // alert(currentPageNumber);
+        //possibly ger element index 
 
         changeItemStateIfSelected(buttonType, itemListArray, chosenItemNode, chosenStatus);
         deleteAllElementsInArrayWithRemoveStatus();
-        showItemListWithPaginationDevision(itemListArray, defaultStatusForTasksToShow);
+        showItemListWithPaginationDevision(itemListArray, defaultStatusForTasksToShow, currentPageNumber);
     });
 
     $(document).on("dblclick", getJqueryFormatSelectorFrom(wrapperForInnerTextClassName), function(event) {
@@ -407,9 +426,7 @@ $(document).ready(() => {
 
     $(document).on("click", getJqueryFormatSelectorFrom(paginationPageLinkClassName), (e) => {
         const activePage = parseInt(e.target.innerHTML);
-        let currentPageItemArray = getPartOfArrayForPagination(itemListArray, itemsOnOnePageCount, activePage);
-        // console.log(currentPageItemArray);
 
-        showItemListWithPaginationDevision(currentPageItemArray, defaultStatusForTasksToShow, activePage);
+        showItemListWithPaginationDevision(itemListArray, defaultStatusForTasksToShow, activePage);
     })
 });
