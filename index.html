@@ -7,6 +7,7 @@
     <title>Title</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="lib/underscore-min.js"></script>
+    <script src="lib/lodash.js"></script>
 </head>
 <body>
     <div class="content">
@@ -29,6 +30,9 @@
             <li class="tabs__link tabs__link_current" data-tab="tab-all">All</li>
             <li class="tabs__link" data-tab="tab-done">Completed</li>
             <li class="tabs__link" data-tab="tab-undone">Not completed</li>
+        </ul>
+
+        <ul id="pagination_panel" class="content__pagination pagination">
         </ul>
 
         <div class="content__tasks tasks">
