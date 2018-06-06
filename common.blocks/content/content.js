@@ -15,9 +15,10 @@ const addButton = $("#add_button");
 const deleteAllButton = $("#delete_all_button");
 const chooseAllButton = $("#choose_all_button");
 const counterLabelForElementsArraySize = $("#counter_label");
+const paginationPannel = $("#pagination_panel");
 
-const tabsSwitchSelector = "tabs__link";
-const elementSelector = "tasks__item";
+const tabsSwitchClassName = "tabs__link";
+const elementClassName = "tasks__item";
 const defaultStatusClassName = "tasks__item_default";
 const doneStatusClassName = "tasks__item_done";
 const labelForActionsClassName = "item__label";
@@ -25,11 +26,11 @@ const wrapperForInnerTextClassName = "item__textwrapper";
 const checkboxClassName = "item__checkbox";
 const deleteItemButtonClassName = "item__delete";
 const itemGhostInputFieldClassName = "item__ghost";
+const paginationPageLinkClassName = "pagination__link";
+
+const currentPageId = "current_page";
 
 const enterKey = 13;
-const keyEvent = "keyup";
-const mouseClickEvent = "click";
-const mouseDoubleClickEvent = "dblclick";
 
 const defaultStatusForTasks = "undone";
 const doneStatusForTasks = "done";
@@ -47,14 +48,15 @@ const checkboxType = "checkbox";
 
 const itemListArray = Array();
 
-// const itemsOnOnePageCount = 5;
+const itemsOnOnePageCount = 5;
+const defaultPageNumber = 1;
 
-function addKeyupEvenListenerForInput(key, eventNameForKey) {
+function addKeyupEvenListenerForInput() {
     inputField.focus();
-    inputField.addEventListener(eventNameForKey, (e) => {
+    inputField.addEventListener("keyup", (e) => {
         e.preventDefault();
 
-        if (e.which === key) {
+        if (e.which === enterKey) {
             addButton.click();
         }
     });
@@ -92,6 +94,34 @@ function createHtmlElementFromArrayElement(arrayElement, tag, selector) {
     return resultHtmlNode;
 }
 
+function createPaginationLinks(pageCount, tag) {
+    let paginationArrayNodeString = "";
+    const newPageCountForDisplay = pageCount + 1;
+    for(let pageNumber = 1; pageNumber < newPageCountForDisplay; pageNumber++) {
+        paginationArrayNodeString += `<${tag} class="${paginationPageLinkClassName}">${pageNumber}` + "<" + "/" + `${tag}`;
+    }
+
+    return paginationArrayNodeString;
+}
+
+function getCurrentPageNumber() {
+    const pageNode = document.getElementById(currentPageId);
+    let pageNumber = parseInt(pageNode.textContent);
+    if (isNaN(pageNumber)) {
+        pageNumber = defaultPageNumber;
+    }
+    return pageNumber;
+}
+
+function setActiveStateForPageNumber(pageNumber) {
+    const pageNodes = document.getElementsByClassName(paginationPageLinkClassName);
+    for (let i = 0; i < pageNodes.length; i++) {
+        if (pageNodes[i].textContent === pageNumber.toString()) {
+            pageNodes[i].setAttribute("id", currentPageId);
+        }
+    }
+}
+
 function getArrayByObjectKeyWrapper(itemsArray, key, value) {
     return _.filter(itemsArray, (element) => {
         return element[key] === value;
@@ -127,19 +157,30 @@ function createItemsTagsGroupFromArray(array, tag, selector, statusToShow) {
 }
 
 function withdrawElements(itemList, itemListArray, itemsStatusToShowWithTabs) {
-    const elementTaggedList = createItemsTagsGroupFromArray(itemListArray, tagTypeForItems, elementSelector, itemsStatusToShowWithTabs);
+    const elementTaggedList = createItemsTagsGroupFromArray(itemListArray, tagTypeForItems, elementClassName, itemsStatusToShowWithTabs);
     itemList.innerHTML = elementTaggedList;
 }
 
-// function getPartOfArrayForPagination(itemsOnePageCount, pageNumber) {
-//     alert(`${itemsOnePageCount * pageNumber - 1} -> ${itemsOnePageCount * pageNumber - 1 - 4}`)
-// }
+function getPartOfArrayForPagination(itemsArray, itemsOnePageCount, pageNumber) {
+    let endIndex = itemsOnePageCount * pageNumber;
+    const startIndex = endIndex - itemsOnePageCount;
+    if (endIndex > itemsArray.length) {
+        endIndex = itemsArray.length;
+    }
+    const partOfArray = _.slice(itemsArray, startIndex, endIndex);
+    return partOfArray;
+}
+
+
 
 function addElementToObjectsArray(array, inputField) {
     const inputedValue = inputField.value;
     if (inputedValue !== "") {
-        const foundedObject = _.findWhere(array, {inputedContent: inputedValue});
-        if (!foundedObject) {
+        // const foundedObject = _.findWhere(array, {inputedContent: inputedValue});
+        const indexOfFoundedObject = _.findIndex(itemListArray, ["inputedContent", inputedValue]);
+
+        if (indexOfFoundedObject) {
+            // if (!foundedObject) {
             let newElement = createObjectFromNewValue(inputedValue);
             array.push(newElement);
         } else {
@@ -157,8 +198,7 @@ function oppositValueFor(selector, firstAlternative, secondAlternative) {
 }
 
 function changeItemStateIfSelected(elementType, listItemArray, chosenItemNode, chosenStatus) {
-    const objectEqualsToSelected = _.findWhere(itemListArray, {inputedContent: chosenItemNode.textContent});
-    const indexOfFoundedObject = _.indexOf(itemListArray, objectEqualsToSelected);
+    const indexOfFoundedObject = _.findIndex(itemListArray, ["inputedContent", chosenItemNode.textContent]);
 
     switch (elementType) {
         case buttonType:
@@ -190,8 +230,7 @@ function repaintCurrentNodeAfterCheckboxChanged(chosenItemNode, chosenStatus) {
 }
 
 function updateElement(oldValue, newValue) {
-    const objectEqualsToSelected = _.findWhere(itemListArray, {inputedContent: oldValue});
-    const indexOfFoundedObject = _.indexOf(itemListArray, objectEqualsToSelected);
+    const indexOfFoundedObject = _.findIndex(itemListArray, ["inputedContent", oldValue]);
 
     if (newValue !== "") {
         itemListArray[indexOfFoundedObject].inputedContent = newValue;
@@ -237,7 +276,7 @@ function getJqueryFormatSelectorFrom(plainSelector) {
 }
 
 $(document).ready(() => {
-    addKeyupEvenListenerForInput(enterKey, keyEvent);
+    addKeyupEvenListenerForInput();
 
     addButton.click(() => {
         addElementToObjectsArray(itemListArray, inputField);
@@ -246,7 +285,7 @@ $(document).ready(() => {
         updateElementsCountForStatus(defaultStatusForTasksToShow);
     });
 
-    $(document).on(mouseClickEvent, getJqueryFormatSelectorFrom(checkboxClassName), (e) => {
+    $(document).on("click", getJqueryFormatSelectorFrom(checkboxClassName), (e) => {
         const chosenItemNode = e.target.parentElement.parentElement.querySelector(getJqueryFormatSelectorFrom(wrapperForInnerTextClassName));
         let chosenStatus = "";
 
@@ -260,7 +299,7 @@ $(document).ready(() => {
         updateElementsCountForStatus(defaultStatusForTasksToShow);
     });
 
-    $(document).on(mouseClickEvent, getJqueryFormatSelectorFrom(deleteItemButtonClassName), (e) => {
+    $(document).on("click", getJqueryFormatSelectorFrom(deleteItemButtonClassName), (e) => {
         const chosenItemNode = e.target.parentElement.parentElement.querySelector(getJqueryFormatSelectorFrom(wrapperForInnerTextClassName));
         let chosenStatus = toRemoveStatusForTask;
 
@@ -269,7 +308,7 @@ $(document).ready(() => {
         updateElementsCountForStatus(defaultStatusForTasksToShow);
     });
 
-    $(document).on(mouseDoubleClickEvent, getJqueryFormatSelectorFrom(wrapperForInnerTextClassName), function(event) {
+    $(document).on("dblclick", getJqueryFormatSelectorFrom(wrapperForInnerTextClassName), function(event) {
         const chosenItemNode = event.target.parentElement.querySelector(getJqueryFormatSelectorFrom(wrapperForInnerTextClassName));
         let oldValue = chosenItemNode.innerText;
         chosenItemNode.innerHTML = "";
@@ -297,18 +336,20 @@ $(document).ready(() => {
     });
 
     deleteAllButton.click(() => {
-        // getPartOfArrayForPagination(itemsOnOnePageCount, 2);
-        //
-        deleteAllObjectsFromArray(itemListArray);
-        withdrawElements(itemsListParentNode, itemListArray, doneStatusForTasksToShow);   // It doesn't matter what status, the array will be empty anymore
-        updateElementsCountForStatus(doneStatusForTasksToShow);
+        const partOfArray = getPartOfArrayForPagination(itemListArray, itemsOnOnePageCount, 3);
+        // console.log(partOfArray);
+        // withdrawElements(itemsListParentNode, partOfArray, defaultStatusForTasksToShow);
+
+        // deleteAllObjectsFromArray(itemListArray);
+        // withdrawElements(itemsListParentNode, itemListArray, doneStatusForTasksToShow);   // It doesn't matter what status, the array will be empty anymore
+        // updateElementsCountForStatus(doneStatusForTasksToShow);
     });
 
     chooseAllButton.click(() => {
         const currentButtonValue = chooseAllButton.text();
         const itemStatus = getStatusForAction(currentButtonValue);
 
-        const itemNodeList = document.getElementsByClassName(elementSelector);
+        const itemNodeList = document.getElementsByClassName(elementClassName);
         for (let i = 0; i < itemNodeList.length; i++) {
             changeItemStateIfSelected(checkboxType, itemListArray, itemNodeList[i], itemStatus);
         }
@@ -320,7 +361,7 @@ $(document).ready(() => {
         updateElementsCountForStatus(doneStatusForTasksToShow);
     });
 
-    $(document).on(mouseClickEvent, getJqueryFormatSelectorFrom(tabsSwitchSelector), (e) => {
+    $(document).on("click", getJqueryFormatSelectorFrom(tabsSwitchClassName), (e) => {
         switch (e.target.innerHTML) {
             case showCompletedTabName:
                 withdrawElements(itemsListParentNode, itemListArray, doneStatusForTasksToShow);
