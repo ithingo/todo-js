@@ -116,10 +116,8 @@ function setActiveStateForPageNumber(pageNumber = defaultPageNumber) {
         }
         if (pageNodes[i].textContent === pageNumber.toString()) {
             pageNodes[i].setAttribute("id", currentPageId);
-            console.log(pageNodes[i]);
         }
     }
-    console.log(pageNodes);
 }
 
 function getArrayByObjectKeyWrapper(itemsArray, key, value) {
@@ -167,29 +165,26 @@ function withdrawElements(itemList, itemListArray, itemsStatusToShowWithTabs) {
 
 function getPartOfArrayForPagination(itemsArray, itemsOnePageCount, pageNumber) {
     let startIndex = itemsArray.length - (itemsArray.length - itemsOnePageCount * (pageNumber - 1));
-    let endIndex = startIndex + (itemsArray.length - itemsOnePageCount * (pageNumber - 1));
+    let endIndex = startIndex + itemsOnePageCount;
 
-    console.log(startIndex, endIndex);
+    // console.log(itemsArray.length - itemsOnePageCount * (pageNumber - 1));
+    // console.log(startIndex, endIndex);
 
     if (endIndex >= itemsArray.length) {
         endIndex = itemsArray.length;
     }
 
-    console.log(startIndex, endIndex);
+    // console.log(startIndex, endIndex);
     const partOfArray = _.slice(itemsArray, startIndex, endIndex);
     return partOfArray;
 }
 
-
-
 function addElementToObjectsArray(array, inputField) {
     const inputedValue = inputField.value;
     if (inputedValue !== "") {
-        // const foundedObject = _.findWhere(array, {inputedContent: inputedValue});
-        const indexOfFoundedObject = _.findIndex(itemListArray, ["inputedContent", inputedValue]);
+        const indexOfFoundedObject = _.findIndex(array, ["inputedContent", inputedValue]);
 
         if (indexOfFoundedObject) {
-            // if (!foundedObject) {
             let newElement = createObjectFromNewValue(inputedValue);
             array.push(newElement);
         } else {
@@ -295,7 +290,6 @@ function withdrawPaginationPannel(itemListArray, activePage) {
     }
 
     setActiveStateForPageNumber(currentPageNumber);
-    alert(currentPageNumber);
 }
 
 function showItemListWithPaginationDevision(array, itemStatus, activePage = 0) {
@@ -413,6 +407,9 @@ $(document).ready(() => {
 
     $(document).on("click", getJqueryFormatSelectorFrom(paginationPageLinkClassName), (e) => {
         const activePage = parseInt(e.target.innerHTML);
-        showItemListWithPaginationDevision(itemListArray, defaultStatusForTasksToShow, activePage);
+        let currentPageItemArray = getPartOfArrayForPagination(itemListArray, itemsOnOnePageCount, activePage);
+        // console.log(currentPageItemArray);
+
+        showItemListWithPaginationDevision(currentPageItemArray, defaultStatusForTasksToShow, activePage);
     })
 });
