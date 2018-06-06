@@ -162,11 +162,18 @@ function withdrawElements(itemList, itemListArray, itemsStatusToShowWithTabs) {
 }
 
 function getPartOfArrayForPagination(itemsArray, itemsOnePageCount, pageNumber) {
-    let endIndex = itemsOnePageCount * pageNumber;
-    const startIndex = endIndex - itemsOnePageCount;
-    if (endIndex > itemsArray.length) {
+    // let endIndex = itemsOnePageCount * pageNumber;
+    // let startIndex = endIndex - itemsOnePageCount;
+    let startIndex = itemsArray.length - (itemsArray.length - itemsOnePageCount * (pageNumber - 1));
+    let endIndex = startIndex + (itemsArray.length - itemsOnePageCount * (pageNumber - 1));
+
+    console.log(startIndex, endIndex);
+
+    if (endIndex >= itemsArray.length) {
         endIndex = itemsArray.length;
     }
+
+    console.log(startIndex, endIndex);
     const partOfArray = _.slice(itemsArray, startIndex, endIndex);
     return partOfArray;
 }
@@ -311,6 +318,7 @@ $(document).ready(() => {
     $(document).on("dblclick", getJqueryFormatSelectorFrom(wrapperForInnerTextClassName), function(event) {
         const chosenItemNode = event.target.parentElement.querySelector(getJqueryFormatSelectorFrom(wrapperForInnerTextClassName));
         let oldValue = chosenItemNode.innerText;
+        // const oldValue = chosenItemNode.innerText;
         chosenItemNode.innerHTML = "";
 
         const ghostInputFieldNodeTag = `<input class="${itemGhostInputFieldClassName}" type="text" value="${oldValue}" />`;
@@ -323,12 +331,19 @@ $(document).ready(() => {
             oldValue = e.target.value;
         });
 
+        // $(getJqueryFormatSelectorFrom(itemGhostInputFieldClassName)).blur(function(e) {
+        //     $(getJqueryFormatSelectorFrom(itemGhostInputFieldClassName)).focus();
+        //
+        //     newValue = e.target.value;
+        // });
+
+
         let newValue = "";
 
         $(getJqueryFormatSelectorFrom(itemGhostInputFieldClassName)).keyup(function(e) {
             if (e.which === enterKey) {
                 newValue = e.target.value;
-                updateElement(oldValue, newValue);
+                updateElement(oldValue, newValue); //sometimes after blur event oldvalue === newvalue, FIX (if changed oldvalue = earlier got value)
                 withdrawElements(itemsListParentNode, itemListArray, defaultStatusForTasksToShow);
                 updateElementsCountForStatus(defaultStatusForTasksToShow);
             }
@@ -337,7 +352,7 @@ $(document).ready(() => {
 
     deleteAllButton.click(() => {
         const partOfArray = getPartOfArrayForPagination(itemListArray, itemsOnOnePageCount, 3);
-        // console.log(partOfArray);
+        console.log(partOfArray);
         // withdrawElements(itemsListParentNode, partOfArray, defaultStatusForTasksToShow);
 
         // deleteAllObjectsFromArray(itemListArray);
