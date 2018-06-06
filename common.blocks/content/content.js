@@ -46,14 +46,14 @@ const tagTypeForItems = "li";
 const buttonType = "button";
 const checkboxType = "checkbox";
 
-const itemListArray = Array();
+let itemListArray = Array();
 
 const itemsOnOnePageCount = 5;
 const defaultPageNumber = 1;
 
 function addKeyupEvenListenerForInput() {
     inputField.focus();
-    inputField.addEventListener("keyup", (e) => {
+    inputField.addEventListener("keyup", function(e) {
         e.preventDefault();
 
         if (e.which === enterKey) {
@@ -98,22 +98,17 @@ function createPaginationLinks(pageCount, tag) {
     let paginationArrayNodeString = "";
     const newPageCountForDisplay = pageCount + 1;
     for(let pageNumber = 1; pageNumber < newPageCountForDisplay; pageNumber++) {
-        paginationArrayNodeString += `<${tag} class="${paginationPageLinkClassName}">${pageNumber}` + "<" + "/" + `${tag}`;
+        paginationArrayNodeString += `<${tag} class="${paginationPageLinkClassName}">${pageNumber}` + "<" + "/" + `${tag}>`;
     }
 
     return paginationArrayNodeString;
 }
 
-function getCurrentPageNumber() {
-    const pageNode = document.getElementById(currentPageId);
-    let pageNumber = parseInt(pageNode.textContent);
-    if (isNaN(pageNumber)) {
-        pageNumber = defaultPageNumber;
-    }
-    return pageNumber;
+function getCurrentPageNumber(array) {
+   return Math.ceil(array.length / itemsOnOnePageCount);
 }
 
-function setActiveStateForPageNumber(pageNumber) {
+function setActiveStateForPageNumber(pageNumber = defaultPageNumber) {
     const pageNodes = document.getElementsByClassName(paginationPageLinkClassName);
     for (let i = 0; i < pageNodes.length; i++) {
         if (pageNodes[i].textContent === pageNumber.toString()) {
@@ -156,14 +151,16 @@ function createItemsTagsGroupFromArray(array, tag, selector, statusToShow) {
     return itemsTagged;
 }
 
+function deleteAllElementsInArrayWithRemoveStatus() {
+    itemListArray = _.filter(itemListArray, (element) => { return element.removeStatus !== toRemoveStatusForTask; });
+}
+
 function withdrawElements(itemList, itemListArray, itemsStatusToShowWithTabs) {
     const elementTaggedList = createItemsTagsGroupFromArray(itemListArray, tagTypeForItems, elementClassName, itemsStatusToShowWithTabs);
     itemList.innerHTML = elementTaggedList;
 }
 
 function getPartOfArrayForPagination(itemsArray, itemsOnePageCount, pageNumber) {
-    // let endIndex = itemsOnePageCount * pageNumber;
-    // let startIndex = endIndex - itemsOnePageCount;
     let startIndex = itemsArray.length - (itemsArray.length - itemsOnePageCount * (pageNumber - 1));
     let endIndex = startIndex + (itemsArray.length - itemsOnePageCount * (pageNumber - 1));
 
@@ -206,7 +203,6 @@ function oppositValueFor(selector, firstAlternative, secondAlternative) {
 
 function changeItemStateIfSelected(elementType, listItemArray, chosenItemNode, chosenStatus) {
     const indexOfFoundedObject = _.findIndex(itemListArray, ["inputedContent", chosenItemNode.textContent]);
-
     switch (elementType) {
         case buttonType:
             listItemArray[indexOfFoundedObject].removeStatus = chosenStatus;
@@ -282,14 +278,30 @@ function getJqueryFormatSelectorFrom(plainSelector) {
     return "." + plainSelector;
 }
 
+function withdrawPaginationPannel(itemListArray) {
+    const currentPageNumber = getCurrentPageNumber(itemListArray);
+    const paginationLinksString = createPaginationLinks(currentPageNumber, tagTypeForItems);
+    paginationPannel.html("");
+    paginationPannel.append(paginationLinksString);
+
+    setActiveStateForPageNumber(currentPageNumber);
+}
+
+function showItemListWithPaginationDevision(array, itemStatus) {
+    withdrawElements(itemsListParentNode, array, itemStatus);
+    withdrawPaginationPannel(array);
+
+    updateElementsCountForStatus(itemStatus);
+}
+
 $(document).ready(() => {
     addKeyupEvenListenerForInput();
 
     addButton.click(() => {
         addElementToObjectsArray(itemListArray, inputField);
         inputField.value = "";
-        withdrawElements(itemsListParentNode, itemListArray, defaultStatusForTasksToShow);
-        updateElementsCountForStatus(defaultStatusForTasksToShow);
+
+        showItemListWithPaginationDevision(itemListArray, defaultStatusForTasksToShow);
     });
 
     $(document).on("click", getJqueryFormatSelectorFrom(checkboxClassName), (e) => {
@@ -311,8 +323,8 @@ $(document).ready(() => {
         let chosenStatus = toRemoveStatusForTask;
 
         changeItemStateIfSelected(buttonType, itemListArray, chosenItemNode, chosenStatus);
-        withdrawElements(itemsListParentNode, itemListArray, defaultStatusForTasksToShow);
-        updateElementsCountForStatus(defaultStatusForTasksToShow);
+        deleteAllElementsInArrayWithRemoveStatus();
+        showItemListWithPaginationDevision(itemListArray, defaultStatusForTasksToShow);
     });
 
     $(document).on("dblclick", getJqueryFormatSelectorFrom(wrapperForInnerTextClassName), function(event) {
@@ -344,20 +356,15 @@ $(document).ready(() => {
             if (e.which === enterKey) {
                 newValue = e.target.value;
                 updateElement(oldValue, newValue); //sometimes after blur event oldvalue === newvalue, FIX (if changed oldvalue = earlier got value)
-                withdrawElements(itemsListParentNode, itemListArray, defaultStatusForTasksToShow);
-                updateElementsCountForStatus(defaultStatusForTasksToShow);
+
+                showItemListWithPaginationDevision(itemListArray, defaultStatusForTasksToShow);
             }
         });
     });
 
     deleteAllButton.click(() => {
-        const partOfArray = getPartOfArrayForPagination(itemListArray, itemsOnOnePageCount, 3);
-        console.log(partOfArray);
-        // withdrawElements(itemsListParentNode, partOfArray, defaultStatusForTasksToShow);
-
-        // deleteAllObjectsFromArray(itemListArray);
-        // withdrawElements(itemsListParentNode, itemListArray, doneStatusForTasksToShow);   // It doesn't matter what status, the array will be empty anymore
-        // updateElementsCountForStatus(doneStatusForTasksToShow);
+        deleteAllObjectsFromArray(itemListArray);
+        showItemListWithPaginationDevision(itemListArray, doneStatusForTasksToShow);  // It doesn't matter what status, the array will be empty anymore
     });
 
     chooseAllButton.click(() => {
@@ -372,25 +379,28 @@ $(document).ready(() => {
         const newButtonName = oppositValueFor(currentButtonValue, selectAllStatusForSelectAllButton, deselectAllStatusForSelectAllButton);
         chooseAllButton.html(newButtonName);
 
-        withdrawElements(itemsListParentNode, itemListArray, doneStatusForTasksToShow);
-        updateElementsCountForStatus(doneStatusForTasksToShow);
+        showItemListWithPaginationDevision(itemListArray, doneStatusForTasksToShow);
     });
 
     $(document).on("click", getJqueryFormatSelectorFrom(tabsSwitchClassName), (e) => {
+        let itemStatus = "";
         switch (e.target.innerHTML) {
             case showCompletedTabName:
-                withdrawElements(itemsListParentNode, itemListArray, doneStatusForTasksToShow);
-                updateElementsCountForStatus(doneStatusForTasksToShow);
+                itemStatus = doneStatusForTasksToShow;
                 break;
             case showNotCompletedTabName:
-                withdrawElements(itemsListParentNode, itemListArray, undoneStatusForTasksToShow);
-                updateElementsCountForStatus(undoneStatusForTasksToShow);
+                itemStatus = undoneStatusForTasksToShow;
                 break;
             case showAllTabName:
             default:
-                withdrawElements(itemsListParentNode, itemListArray, defaultStatusForTasksToShow);
-                updateElementsCountForStatus(defaultStatusForTasksToShow);
+                itemStatus = defaultStatusForTasksToShow;
                 break;
         }
+
+        showItemListWithPaginationDevision(itemListArray, itemStatus);
     });
+
+    $(document).on("click", getJqueryFormatSelectorFrom(paginationPageLinkClassName), (e) => {
+        console.log(e.target);
+    })
 });
