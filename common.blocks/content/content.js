@@ -67,7 +67,7 @@ function createObjectFromNewValue(inputedValue) {
     return {
         inputedContent: inputedValue,
         statusOfProgress: defaultStatusForTasks,
-        removeStatus: toKeepStatusForTask,
+        removeStatus: toKeepStatusForTask
     };
 }
 
@@ -87,18 +87,13 @@ function createHtmlElementFromArrayElement(arrayElement, tag, selector) {
     const groupForCheckboxAndButton = `<div class="${labelForActionsClassName}">${partOfStringWithDeleteButton + partOfStringWithCheckbox}</div>`;
     const innerWrapperForTextContent = `<div class="${wrapperForInnerTextClassName}">${arrayElement.inputedContent}</div>`;
 
-    const resultHtmlNode = `<${tag} class="${finalSelectorForTag}">`
-                            + groupForCheckboxAndButton
-                            + innerWrapperForTextContent
-                            + "<" + "/" + `${tag}>`;
-
-    return resultHtmlNode;
+    return `<${tag} class="${finalSelectorForTag}">` + groupForCheckboxAndButton + innerWrapperForTextContent + "<" + "/" + `${tag}>`;
 }
 
 function createPaginationLinks(pageCount, tag) {
     let paginationArrayNodeString = "";
     const newPageCountForDisplay = pageCount + 1;
-    for(let pageNumber = 1; pageNumber < newPageCountForDisplay; pageNumber++) {
+    for (let pageNumber = 1; pageNumber < newPageCountForDisplay; pageNumber++) {
         paginationArrayNodeString += `<${tag} class="${paginationPageLinkClassName}">${pageNumber}` + "<" + "/" + `${tag}>`;
     }
 
@@ -131,15 +126,12 @@ function getItemObjectsByCurrentStatus(itemsArray, statusToShow = defaultStatusF
     switch (statusToShow) {
         case doneStatusForTasksToShow:
             return getArrayByObjectKeyWrapper(itemsArray, "statusOfProgress", doneStatusForTasks);
-            break;
         case undoneStatusForTasksToShow:
             return getArrayByObjectKeyWrapper(itemsArray, "statusOfProgress", defaultStatusForTasks);
-
-            break;
         case  defaultStatusForTasksToShow:
+            return itemsArray;
         default:
             return itemsArray;
-            break;
     }
 }
 
@@ -160,8 +152,7 @@ function deleteAllElementsInArrayWithRemoveStatus() {
 }
 
 function withdrawElements(itemList, itemListArray, itemsStatusToShowWithTabs) {
-    const elementTaggedList = createItemsTagsGroupFromArray(itemListArray, tagTypeForItems, elementClassName, itemsStatusToShowWithTabs);
-    itemList.innerHTML = elementTaggedList;
+    itemList.innerHTML = createItemsTagsGroupFromArray(itemListArray, tagTypeForItems, elementClassName, itemsStatusToShowWithTabs);
 }
 
 function getPartOfArrayForPagination(itemsArray, itemsOnePageCount, pageNumber) {
@@ -171,9 +162,7 @@ function getPartOfArrayForPagination(itemsArray, itemsOnePageCount, pageNumber) 
     if (endIndex >= itemsArray.length) {
         endIndex = itemsArray.length;
     }
-
-    const partOfArray = _.slice(itemsArray, startIndex, endIndex);
-    return partOfArray;
+    return _.slice(itemsArray, startIndex, endIndex);
 }
 
 function addElementToObjectsArray(array, inputField) {
@@ -247,14 +236,12 @@ function getElementsCountByStatus(itemsArray, statusToShow) {
     switch (statusToShow) {
         case doneStatusForTasksToShow:
             return getArrayByObjectKeyWrapper(itemsArray, "statusOfProgress", doneStatusForTasks).length;
-            break;
         case undoneStatusForTasksToShow:
             return getArrayByObjectKeyWrapper(itemsArray, "statusOfProgress", defaultStatusForTasks).length;
-            break;
         case  defaultStatusForTasksToShow:
+            return itemsArray.length;
         default:
             return itemsArray.length;
-            break;
     }
 }
 
@@ -290,7 +277,6 @@ function showItemListWithPaginationDevision(array, itemStatus, activePageNumber,
         currentPageItemArray = getPartOfArrayForPagination(array, itemsOnOnePageCount, activePageNumber);
     } else {
         currentPageItemArray = array;
-
     }
 
     withdrawElements(itemsListParentNode, currentPageItemArray, itemStatus);
@@ -415,6 +401,8 @@ $(document).ready(() => {
                 itemStatus = undoneStatusForTasksToShow;
                 break;
             case showAllTabName:
+                itemStatus = defaultStatusForTasksToShow;
+                break;
             default:
                 itemStatus = defaultStatusForTasksToShow;
                 break;
@@ -428,5 +416,5 @@ $(document).ready(() => {
         const activePage = parseInt(e.target.innerHTML);
 
         showItemListWithPaginationDevision(itemListArray, defaultStatusForTasksToShow, activePage);
-    })
+    });
 });
