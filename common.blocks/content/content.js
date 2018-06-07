@@ -261,12 +261,7 @@ function withdrawPaginationPannel(itemListArray, activePageNumber) {
 }
 
 function showItemListWithPaginationDevision(array, itemStatus, activePageNumber, allElementsInArraySelection = false) {
-    let currentPageItemArray = [];
-    if (!allElementsInArraySelection) {
-        currentPageItemArray = getPartOfArrayForPagination(array, itemsOnOnePageCount, activePageNumber);
-    } else {
-        currentPageItemArray = array;
-    }
+    const currentPageItemArray =  allElementsInArraySelection ? array : getPartOfArrayForPagination(array, itemsOnOnePageCount, activePageNumber);
 
     withdrawElements(itemsListParentNode, currentPageItemArray, itemStatus);
     withdrawPaginationPannel(itemListArray, activePageNumber);
@@ -280,7 +275,8 @@ function getCurrentPageByElementContentSearch(itemsArray, elementTextContent) {
     return Math.ceil(currentPage);
 }
 
-$(document).ready(() => {
+//Short expression for $(document).ready(function(){...})
+$(function () {
     addKeyupEvenListenerForInput();
 
     addButton.click(() => {
@@ -289,6 +285,8 @@ $(document).ready(() => {
 
         const currentPageNumber = getCurrentPageNumber(itemListArray);
         showItemListWithPaginationDevision(itemListArray, defaultStatusForTasksToShow, currentPageNumber);
+
+        return false;
     });
 
     $(document).on("click", getJqueryFormatSelectorFrom(checkboxClassName), (e) => {
@@ -297,6 +295,8 @@ $(document).ready(() => {
 
         changeItemStateIfSelected(checkboxType, itemListArray, chosenItemNode, chosenStatus);
         updateElementsCountForStatus(defaultStatusForTasksToShow);
+
+        return false;
     });
 
     $(document).on("click", getJqueryFormatSelectorFrom(deleteItemButtonClassName), (e) => {
@@ -307,6 +307,8 @@ $(document).ready(() => {
         changeItemStateIfSelected(buttonType, itemListArray, chosenItemNode, chosenStatus);
         deleteAllElementsInArrayWithRemoveStatus();
         showItemListWithPaginationDevision(itemListArray, defaultStatusForTasksToShow, currentPageNumber);
+
+        return false;
     });
 
     $(document).on("dblclick", getJqueryFormatSelectorFrom(wrapperForInnerTextClassName), function(event) {
@@ -323,6 +325,8 @@ $(document).ready(() => {
 
         $(getJqueryFormatSelectorFrom(itemGhostInputFieldClassName)).focus(function(e) {
             oldValue = e.target.value;
+
+            return false;
         });
 
         // $(getJqueryFormatSelectorFrom(itemGhostInputFieldClassName)).blur(function(e) {
@@ -341,6 +345,8 @@ $(document).ready(() => {
 
                 const currentPageNumber = getCurrentPageByElementContentSearch(itemListArray, newValue);
                 showItemListWithPaginationDevision(itemListArray, defaultStatusForTasksToShow, currentPageNumber);
+
+                return false;
             }
         });
     });
@@ -349,6 +355,8 @@ $(document).ready(() => {
         deleteAllObjectsFromArray();
         const activePage = defaultPageNumber;
         showItemListWithPaginationDevision(itemListArray, doneStatusForTasksToShow, activePage);  // It doesn't matter what status, the array will be empty anymore
+
+        return false;
     });
 
     chooseAllButton.click(() => {
@@ -366,6 +374,8 @@ $(document).ready(() => {
         const activePage = defaultPageNumber;
         const allElementsInArraySelection = true;
         showItemListWithPaginationDevision(itemListArray, doneStatusForTasksToShow, activePage,  allElementsInArraySelection);
+
+        return false;
     });
 
     $(document).on("click", getJqueryFormatSelectorFrom(tabsSwitchClassName), (e) => {
@@ -387,10 +397,14 @@ $(document).ready(() => {
         const activePage = defaultPageNumber;
 
         showItemListWithPaginationDevision(itemListArray, itemStatus, activePage);
+
+        return false;
     });
 
     $(document).on("click", getJqueryFormatSelectorFrom(paginationPageLinkClassName), (e) => {
         const activePage = parseInt(e.target.innerHTML);
         showItemListWithPaginationDevision(itemListArray, defaultStatusForTasksToShow, activePage);
+
+        return false;
     });
 });
