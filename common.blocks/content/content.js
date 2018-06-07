@@ -50,6 +50,7 @@ let itemListArray = Array();
 
 const itemsOnOnePageCount = 5;
 const defaultPageNumber = 1;
+const indexNotFound = -1;
 
 function addKeyupEvenListenerForInput() {
     inputField.focus();
@@ -108,29 +109,16 @@ function getCurrentPageNumber(array) {
    return Math.ceil(array.length / itemsOnOnePageCount);
 }
 
-function getPageNumberForElementIndexWhenDelete(elementContent, array) {
-    const indexOfFoundedObject = _.findIndex(array, ["inputedContent", elementContent]);
-    
-}
-
-function setActiveStateForPageNumber(pageNumber, invokeState = "non-initial") {
-    // if (invokeState === "non-initial") {
-        const pageNodes = document.getElementsByClassName(paginationPageLinkClassName);
-        for (let i = 0; i < pageNodes.length; i++) {
-            if (pageNodes[i].hasAttribute("id")) {
-                pageNodes[i].removeAttribute("id");
-            }
-            if (pageNodes[i].textContent === pageNumber.toString()) {
-                pageNodes[i].setAttribute("id", currentPageId);
-            }
+function setActiveStateForPageNumber(pageNumber) {
+    const pageNodes = document.getElementsByClassName(paginationPageLinkClassName);
+    for (let i = 0; i < pageNodes.length; i++) {
+        if (pageNodes[i].hasAttribute("id")) {
+            pageNodes[i].removeAttribute("id");
         }
-    // } else { // initial state, before element adding
-    //     const paginationLinksString = createPaginationLinks(pageNumber, tagTypeForItems);
-    //     paginationPannel.html("");
-    //     paginationPannel.append(paginationLinksString);
-
-    //     $(getJqueryFormatSelectorFrom(paginationPageLinkClassName)).attr("id", currentPageId);
-    // }
+        if (pageNodes[i].textContent === pageNumber.toString()) {
+            pageNodes[i].setAttribute("id", currentPageId);
+        }
+    }
 }
 
 function getArrayByObjectKeyWrapper(itemsArray, key, value) {
@@ -193,7 +181,7 @@ function addElementToObjectsArray(array, inputField) {
     if (inputedValue !== "") {
         const indexOfFoundedObject = _.findIndex(array, ["inputedContent", inputedValue]);
 
-        if (indexOfFoundedObject) {
+        if (indexOfFoundedObject === indexNotFound) {
             let newElement = createObjectFromNewValue(inputedValue);
             array.push(newElement);
         } else {
@@ -288,30 +276,38 @@ function getJqueryFormatSelectorFrom(plainSelector) {
 }
 
 function withdrawPaginationPannel(itemListArray, activePageNumber) {
-    const currentPageNumber = getCurrentPageNumber(itemListArray);
-    const paginationLinksString = createPaginationLinks(currentPageNumber, tagTypeForItems);
+    const lastPageNumber = getCurrentPageNumber(itemListArray);
+    const paginationLinksString = createPaginationLinks(lastPageNumber, tagTypeForItems);
     paginationPannel.html("");
     paginationPannel.append(paginationLinksString);
 
-    setActiveStateForPageNumber(currentPageNumber);
+    setActiveStateForPageNumber(activePageNumber);
 }
 
-function showItemListWithPaginationDevision(array, itemStatus, activePageNumber = 0) {
-    let currentPageNumber = '';
-
-    if (activePageNumber !== 0) {
-        currentPageNumber = activePageNumber;
+function showItemListWithPaginationDevision(array, itemStatus, activePageNumber, allElementsInArraySelection = false) {
+    let currentPageItemArray = [];
+    if (!allElementsInArraySelection) {
+        currentPageItemArray = getPartOfArrayForPagination(array, itemsOnOnePageCount, activePageNumber);
     } else {
-        currentPageNumber = parseInt(document.getElementById(currentPageId).textContent);
-        alert(currentPageNumber);
-    }
+        currentPageItemArray = array;
 
-    const currentPageItemArray = getPartOfArrayForPagination(array, itemsOnOnePageCount, activePageNumber);
+    }
 
     withdrawElements(itemsListParentNode, currentPageItemArray, itemStatus);
     withdrawPaginationPannel(itemListArray, activePageNumber);
 
     updateElementsCountForStatus(itemStatus);
+}
+
+function getCurrentPageByElementContentSearch(itemsArray, elementTextContent) {
+    const index = _.findIndex(itemsArray, ["inputedContent", elementTextContent]);
+    let currentPage = 0;
+    if (index) {
+        currentPage = (index + 1) / itemsOnOnePageCount;
+    } else {
+        currentPage = defaultPageNumber;
+    }
+    return Math.ceil(currentPage);
 }
 
 $(document).ready(() => {
@@ -342,9 +338,7 @@ $(document).ready(() => {
     $(document).on("click", getJqueryFormatSelectorFrom(deleteItemButtonClassName), (e) => {
         const chosenItemNode = e.target.parentElement.parentElement.querySelector(getJqueryFormatSelectorFrom(wrapperForInnerTextClassName));
         const chosenStatus = toRemoveStatusForTask;
-        const currentPageNumber = parseInt(document.getElementById(currentPageId).textContent);
-        // alert(currentPageNumber);
-        //possibly ger element index 
+        const currentPageNumber = getCurrentPageByElementContentSearch(itemListArray, chosenItemNode.textContent);
 
         changeItemStateIfSelected(buttonType, itemListArray, chosenItemNode, chosenStatus);
         deleteAllElementsInArrayWithRemoveStatus();
@@ -381,14 +375,16 @@ $(document).ready(() => {
                 newValue = e.target.value;
                 updateElement(oldValue, newValue); //sometimes after blur event oldvalue === newvalue, FIX (if changed oldvalue = earlier got value)
 
-                showItemListWithPaginationDevision(itemListArray, defaultStatusForTasksToShow);
+                const currentPageNumber = getCurrentPageByElementContentSearch(itemListArray, newValue);
+                showItemListWithPaginationDevision(itemListArray, defaultStatusForTasksToShow, currentPageNumber);
             }
         });
     });
 
     deleteAllButton.click(() => {
         deleteAllObjectsFromArray(itemListArray);
-        showItemListWithPaginationDevision(itemListArray, doneStatusForTasksToShow);  // It doesn't matter what status, the array will be empty anymore
+        const activePage = defaultPageNumber;
+        showItemListWithPaginationDevision(itemListArray, doneStatusForTasksToShow, activePage);  // It doesn't matter what status, the array will be empty anymore
     });
 
     chooseAllButton.click(() => {
@@ -403,7 +399,10 @@ $(document).ready(() => {
         const newButtonName = oppositValueFor(currentButtonValue, selectAllStatusForSelectAllButton, deselectAllStatusForSelectAllButton);
         chooseAllButton.html(newButtonName);
 
-        showItemListWithPaginationDevision(itemListArray, doneStatusForTasksToShow);
+        const activePage = defaultPageNumber;
+        const allElementsInArraySelection = true;
+        // getJqueryFormatSelectorFrom(tabsSwitchClassName);
+        showItemListWithPaginationDevision(itemListArray, doneStatusForTasksToShow, activePage,  allElementsInArraySelection);
     });
 
     $(document).on("click", getJqueryFormatSelectorFrom(tabsSwitchClassName), (e) => {
@@ -420,8 +419,9 @@ $(document).ready(() => {
                 itemStatus = defaultStatusForTasksToShow;
                 break;
         }
+        const activePage = defaultPageNumber;
 
-        showItemListWithPaginationDevision(itemListArray, itemStatus);
+        showItemListWithPaginationDevision(itemListArray, itemStatus, activePage);
     });
 
     $(document).on("click", getJqueryFormatSelectorFrom(paginationPageLinkClassName), (e) => {
