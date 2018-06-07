@@ -18,6 +18,7 @@ const counterLabelForElementsArraySize = $("#counter_label");
 const paginationPannel = $("#pagination_panel");
 
 const tabsSwitchClassName = "tabs__link";
+const tabsSwitchActiveStateClassName = "tabs__link_current";
 const elementClassName = "tasks__item";
 const defaultStatusClassName = "tasks__item_default";
 const doneStatusClassName = "tasks__item_done";
@@ -71,33 +72,25 @@ function createObjectFromNewValue(inputedValue) {
     };
 }
 
-function createHtmlElementFromArrayElement(arrayElement, tag, selector) {
-    const partOfStringWithCheckbox = `<input type="checkbox" class="${checkboxClassName}">`;
-    const partOfStringWithDeleteButton = `<button type="button" class="${deleteItemButtonClassName}" aria-label="Close"></button>`;
+function getHtmlTag(arrayElement, tag, selector) {
+    const partWithCheckbox = `<input type="checkbox" class="${checkboxClassName}">`;
+    const partWithDeleteButton = `<button type="button" class="${deleteItemButtonClassName}" aria-label="Close"></button>`;
 
-    let taskStatusSelector = "";
-
-    if (arrayElement.statusOfProgress === defaultStatusForTasks) {
-        taskStatusSelector = defaultStatusClassName;
-    } else {
-        taskStatusSelector = doneStatusClassName;
-    }
-
+    const taskStatusSelector = arrayElement.statusOfProgress === defaultStatusForTasks ? defaultStatusClassName : doneStatusClassName;
     const finalSelectorForTag = selector + " " + taskStatusSelector;
-    const groupForCheckboxAndButton = `<div class="${labelForActionsClassName}">${partOfStringWithDeleteButton + partOfStringWithCheckbox}</div>`;
+
+    const groupForCheckboxAndButton = `<div class="${labelForActionsClassName}">${partWithDeleteButton + partWithCheckbox}</div>`;
     const innerWrapperForTextContent = `<div class="${wrapperForInnerTextClassName}">${arrayElement.inputedContent}</div>`;
 
     return `<${tag} class="${finalSelectorForTag}">` + groupForCheckboxAndButton + innerWrapperForTextContent + "<" + "/" + `${tag}>`;
 }
 
 function createPaginationLinks(pageCount, tag) {
-    let paginationArrayNodeString = "";
-    const newPageCountForDisplay = pageCount + 1;
-    for (let pageNumber = 1; pageNumber < newPageCountForDisplay; pageNumber++) {
-        paginationArrayNodeString += `<${tag} class="${paginationPageLinkClassName}">${pageNumber}` + "<" + "/" + `${tag}>`;
-    }
-
-    return paginationArrayNodeString;
+    //Iterate through each generated page number and create pagination tabs for them
+    const paginationArrayNode = [...Array(pageCount).keys()].map(page => {
+        return `<${tag} class="${paginationPageLinkClassName}">${page + 1}` + "<" + "/" + `${tag}>`;
+    });
+    return _.join(paginationArrayNode, "");
 }
 
 function getCurrentPageNumber(array) {
@@ -106,20 +99,30 @@ function getCurrentPageNumber(array) {
 
 function setActiveStateForPageNumber(pageNumber) {
     const pageNodes = document.getElementsByClassName(paginationPageLinkClassName);
-    for (let i = 0; i < pageNodes.length; i++) {
-        if (pageNodes[i].hasAttribute("id")) {
-            pageNodes[i].removeAttribute("id");
+    for (const tabNode of pageNodes) {
+        if (tabNode.hasAttribute("id")) {
+            tabNode.removeAttribute("id");
         }
-        if (pageNodes[i].textContent === pageNumber.toString()) {
-            pageNodes[i].setAttribute("id", currentPageId);
+        if (tabNode.textContent === pageNumber.toString()) {
+            tabNode.setAttribute("id", currentPageId);
         }
     }
 }
 
+// function setActiveStateForTabs(clickedTab) {
+//     const switchingTabs = document.getElementsByClassName(tabsSwitchClassName);
+//     for (let i = 0; i < switchingTabs.length; i++) {
+//         if (switchingTabs[i].hasAttribute("class", tabsSwitchActiveStateClassName)) {
+//             switchingTabs[i].removeAttribute("class", tabsSwitchActiveStateClassName);
+//         }
+//         if (switchingTabs[i].textContent === clickedTab.toString()) {
+//             switchingTabs[i].setAttribute("id", currentPageId);
+//         }
+//     }
+// }
+
 function getArrayByObjectKeyWrapper(itemsArray, key, value) {
-    return _.filter(itemsArray, (element) => {
-        return element[key] === value;
-    });
+    return _.filter(itemsArray, element => { element[key] === value; });
 }
 
 function getItemObjectsByCurrentStatus(itemsArray, statusToShow = defaultStatusForTasksToShow) {
@@ -137,14 +140,12 @@ function getItemObjectsByCurrentStatus(itemsArray, statusToShow = defaultStatusF
 
 function createItemsTagsGroupFromArray(array, tag, selector, statusToShow) {
     const newArray = getItemObjectsByCurrentStatus(array, statusToShow);
-
-    let itemsTagged = "";
-    for (let i = 0; i < newArray.length; i++) {
-        if (newArray[i].removeStatus !== toRemoveStatusForTask) {
-            itemsTagged += createHtmlElementFromArrayElement(newArray[i], tag, selector);
+    const itemsTaggedArray = _.map(newArray, element => {
+        if (element.removeStatus !== toRemoveStatusForTask) {
+            return getHtmlTag(element, tag, selector);
         }
-    }
-    return itemsTagged;
+    });
+    return _.join(itemsTaggedArray, "");
 }
 
 function deleteAllElementsInArrayWithRemoveStatus() {
@@ -171,7 +172,7 @@ function addElementToObjectsArray(array, inputField) {
         const indexOfFoundedObject = _.findIndex(array, ["inputedContent", inputedValue]);
 
         if (indexOfFoundedObject === indexNotFound) {
-            let newElement = createObjectFromNewValue(inputedValue);
+            const newElement = createObjectFromNewValue(inputedValue);
             array.push(newElement);
         } else {
             alert(duplicateMessage);
@@ -179,12 +180,8 @@ function addElementToObjectsArray(array, inputField) {
     }
 }
 
-function oppositValueFor(selector, firstAlternative, secondAlternative) {
-    if (selector === firstAlternative) {
-        return secondAlternative;
-    } else {
-        return firstAlternative;
-    }
+function oppositValue(selector, firstAlternative, secondAlternative) {
+    return selector === firstAlternative ? secondAlternative : firstAlternative;
 }
 
 function changeItemStateIfSelected(elementType, listItemArray, chosenItemNode, chosenStatus) {
@@ -195,7 +192,8 @@ function changeItemStateIfSelected(elementType, listItemArray, chosenItemNode, c
             break;
         case checkboxType:
             listItemArray[indexOfFoundedObject].statusOfProgress = chosenStatus;
-            repaintCurrentNodeAfterCheckboxChanged(chosenItemNode, chosenStatus);
+            const repaintClassName = chosenStatus === defaultStatusForTasks ? defaultStatusClassName : doneStatusClassName;
+            changeStatusForNode(chosenItemNode, repaintClassName);
             break;
         default:
             alert(unknownActionMessage);
@@ -205,17 +203,12 @@ function changeItemStateIfSelected(elementType, listItemArray, chosenItemNode, c
 function changeStatusForNode(currentNode, newStatus) {
     const newClassName = newStatus === defaultStatusForTasks ? defaultStatusClassName : doneStatusClassName;
     if (!(currentNode.classList.contains(newClassName))) {
-        currentNode.classList.remove(oppositValueFor(newClassName));
+        currentNode.classList.remove(oppositValue(newClassName));
         currentNode.classList.add(newClassName);
     } else {
         currentNode.classList.remove(newClassName);
-        currentNode.classList.add(oppositValueFor(newClassName));
+        currentNode.classList.add(oppositValue(newClassName));
     }
-}
-
-function repaintCurrentNodeAfterCheckboxChanged(chosenItemNode, chosenStatus) {
-    const repaintClassName = chosenStatus === defaultStatusForTasks ? defaultStatusClassName : doneStatusClassName;
-    changeStatusForNode(chosenItemNode, repaintClassName);
 }
 
 function updateElement(oldValue, newValue) {
@@ -228,8 +221,8 @@ function updateElement(oldValue, newValue) {
     }
 }
 
-function deleteAllObjectsFromArray(listItemsArray) {
-    listItemsArray.length = 0; //or = [] // Array()
+function deleteAllObjectsFromArray() {
+    itemListArray = _.drop(itemListArray, itemListArray.length);
 }
 
 function getElementsCountByStatus(itemsArray, statusToShow) {
@@ -246,11 +239,7 @@ function getElementsCountByStatus(itemsArray, statusToShow) {
 }
 
 function getStatusForAction(currentButtonValueString) {
-    if (currentButtonValueString === selectAllStatusForSelectAllButton) {
-        return doneStatusForTasks;
-    } else {
-        return defaultStatusForTasks;
-    }
+    return currentButtonValueString === selectAllStatusForSelectAllButton ? doneStatusForTasks : defaultStatusForTasks;
 }
 
 function updateElementsCountForStatus(statusToShow) {
@@ -287,12 +276,7 @@ function showItemListWithPaginationDevision(array, itemStatus, activePageNumber,
 
 function getCurrentPageByElementContentSearch(itemsArray, elementTextContent) {
     const index = _.findIndex(itemsArray, ["inputedContent", elementTextContent]);
-    let currentPage = 0;
-    if (index) {
-        currentPage = (index + 1) / itemsOnOnePageCount;
-    } else {
-        currentPage = defaultPageNumber;
-    }
+    const currentPage = index ? (index + 1) / itemsOnOnePageCount : defaultPageNumber;
     return Math.ceil(currentPage);
 }
 
@@ -309,13 +293,7 @@ $(document).ready(() => {
 
     $(document).on("click", getJqueryFormatSelectorFrom(checkboxClassName), (e) => {
         const chosenItemNode = e.target.parentElement.parentElement.querySelector(getJqueryFormatSelectorFrom(wrapperForInnerTextClassName));
-        let chosenStatus = "";
-
-        if (e.target.checked) {
-            chosenStatus = doneStatusForTasks;
-        } else {
-            chosenStatus = defaultStatusForTasks;
-        }
+        const chosenStatus = e.target.checked ? doneStatusForTasks : defaultStatusForTasks;
 
         changeItemStateIfSelected(checkboxType, itemListArray, chosenItemNode, chosenStatus);
         updateElementsCountForStatus(defaultStatusForTasksToShow);
@@ -368,7 +346,7 @@ $(document).ready(() => {
     });
 
     deleteAllButton.click(() => {
-        deleteAllObjectsFromArray(itemListArray);
+        deleteAllObjectsFromArray();
         const activePage = defaultPageNumber;
         showItemListWithPaginationDevision(itemListArray, doneStatusForTasksToShow, activePage);  // It doesn't matter what status, the array will be empty anymore
     });
@@ -378,16 +356,15 @@ $(document).ready(() => {
         const itemStatus = getStatusForAction(currentButtonValue);
 
         const itemNodeList = document.getElementsByClassName(elementClassName);
-        for (let i = 0; i < itemNodeList.length; i++) {
-            changeItemStateIfSelected(checkboxType, itemListArray, itemNodeList[i], itemStatus);
+        for (const itemNode of itemNodeList) {
+            changeItemStateIfSelected(checkboxType, itemListArray, itemNode, itemStatus);
         }
 
-        const newButtonName = oppositValueFor(currentButtonValue, selectAllStatusForSelectAllButton, deselectAllStatusForSelectAllButton);
+        const newButtonName = oppositValue(currentButtonValue, selectAllStatusForSelectAllButton, deselectAllStatusForSelectAllButton);
         chooseAllButton.html(newButtonName);
 
         const activePage = defaultPageNumber;
         const allElementsInArraySelection = true;
-        // getJqueryFormatSelectorFrom(tabsSwitchClassName);
         showItemListWithPaginationDevision(itemListArray, doneStatusForTasksToShow, activePage,  allElementsInArraySelection);
     });
 
@@ -414,7 +391,6 @@ $(document).ready(() => {
 
     $(document).on("click", getJqueryFormatSelectorFrom(paginationPageLinkClassName), (e) => {
         const activePage = parseInt(e.target.innerHTML);
-
         showItemListWithPaginationDevision(itemListArray, defaultStatusForTasksToShow, activePage);
     });
 });
