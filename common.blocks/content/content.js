@@ -8,7 +8,7 @@ const showAllTabName = "All";
 const showCompletedTabName = "Completed";
 const showNotCompletedTabName = "Not completed";
 
-const inputField = document.getElementById("form_input");
+const inputField = $("#form_input");
 const itemsListParentNode = document.getElementById("task_list");
 
 const addButton = $("#add_button");
@@ -26,6 +26,7 @@ const labelForActionsClassName = "item__label";
 const wrapperForInnerTextClassName = "item__textwrapper";
 const checkboxClassName = "item__checkbox";
 const deleteItemButtonClassName = "item__delete";
+const deleteItemButtonSelectors = "item__delete btn close";
 const itemGhostInputFieldClassName = "item__ghost";
 const paginationPageLinkClassName = "pagination__link";
 
@@ -52,6 +53,7 @@ let itemListArray = Array();
 const itemsOnOnePageCount = 5;
 const defaultPageNumber = 1;
 const indexNotFound = -1;
+let index = 0;
 
 function addKeyupEvenListenerForInput() {
     inputField.focus();
@@ -74,7 +76,7 @@ function createObjectFromNewValue(inputedValue) {
 
 function getHtmlTag(arrayElement, tag, selector) {
     const partWithCheckbox = `<input type="checkbox" class="${checkboxClassName}">`;
-    const partWithDeleteButton = `<button type="button" class="${deleteItemButtonClassName}" aria-label="Close"></button>`;
+    const partWithDeleteButton = `<button type="button" class="${deleteItemButtonSelectors}" aria-label="Close"><span aria-hidden="true">&times;</span></button>`;
 
     const taskStatusSelector = arrayElement.statusOfProgress === defaultStatusForTasks ? defaultStatusClassName : doneStatusClassName;
     const finalSelectorForTag = selector + " " + taskStatusSelector;
@@ -192,22 +194,25 @@ function changeItemStateIfSelected(elementType, listItemArray, chosenItemNode, c
             break;
         case checkboxType:
             listItemArray[indexOfFoundedObject].statusOfProgress = chosenStatus;
-            const repaintClassName = chosenStatus === defaultStatusForTasks ? defaultStatusClassName : doneStatusClassName;
-            changeStatusForNode(chosenItemNode, repaintClassName);
+            changeStatusForNode(chosenItemNode, chosenStatus);
             break;
         default:
             alert(unknownActionMessage);
+            break;
     }
 }
 
 function changeStatusForNode(currentNode, newStatus) {
     const newClassName = newStatus === defaultStatusForTasks ? defaultStatusClassName : doneStatusClassName;
-    if (!(currentNode.classList.contains(newClassName))) {
-        currentNode.classList.remove(oppositValue(newClassName));
-        currentNode.classList.add(newClassName);
-    } else {
+    console.log(currentNode.classList);
+    // currentNode.classList.toggle(newClassName);
+    // currentNode.classList.toggle(oppositValue(newClassName, defaultStatusForTasks, doneStatusForTasks));
+    if (currentNode.classList.contains(newClassName)) {
         currentNode.classList.remove(newClassName);
-        currentNode.classList.add(oppositValue(newClassName));
+        currentNode.classList.add(oppositValue(newClassName, defaultStatusForTasks, doneStatusForTasks));
+    } else {
+        currentNode.classList.remove(oppositValue(newClassName, defaultStatusForTasks, doneStatusForTasks));
+        currentNode.classList.add(newClassName);
     }
 }
 
@@ -277,38 +282,66 @@ function getCurrentPageByElementContentSearch(itemsArray, elementTextContent) {
 
 //Short expression for $(document).ready(function(){...})
 $(function () {
-    addKeyupEvenListenerForInput();
+    // addKeyupEvenListenerForInput();
+
+    function addTodo() {
+        let text = inputField.trim();
+        if (text) {
+            const obj = {
+                test: text,
+                id: index,
+                check: false
+            };
+            itemListArray.push(obj);
+            index+=1;
+
+        }
+    }
 
     addButton.click(() => {
-        addElementToObjectsArray(itemListArray, inputField);
-        inputField.value = "";
-
-        const currentPageNumber = getCurrentPageNumber(itemListArray);
-        showItemListWithPaginationDevision(itemListArray, defaultStatusForTasksToShow, currentPageNumber);
+        addTodo();
 
         return false;
     });
 
-    $(document).on("click", getJqueryFormatSelectorFrom(checkboxClassName), (e) => {
+    inputField.keypress(function (e) {
+        if (e.which === enterKey) {
+            addTodo();
+        }
+    });
+
+    $(document).on("change", getJqueryFormatSelectorFrom(checkboxClassName), (e) => {
+
         const chosenItemNode = e.target.parentElement.parentElement.querySelector(getJqueryFormatSelectorFrom(wrapperForInnerTextClassName));
         const chosenStatus = e.target.checked ? doneStatusForTasks : defaultStatusForTasks;
 
         changeItemStateIfSelected(checkboxType, itemListArray, chosenItemNode, chosenStatus);
         updateElementsCountForStatus(defaultStatusForTasksToShow);
-
-        return false;
     });
 
+    // $(document).on("click", getJqueryFormatSelectorFrom(checkboxClassName), (e) => {
+    //     const chosenItemNode = e.target.parentElement.parentElement.querySelector(getJqueryFormatSelectorFrom(wrapperForInnerTextClassName));
+    //     console.log(chosenItemNode);
+    //     let chosenStatus = "";
+    //
+    //     if (e.target.checked) {
+    //         chosenStatus = doneStatusForTasks;
+    //     } else {
+    //         chosenStatus = defaultStatusForTasks;
+    //     }
+    //
+    //     changeItemStateIfSelected(checkboxType, itemListArray, chosenItemNode, chosenStatus);
+    //     updateElementsCountForStatus(defaultStatusForTasksToShow);
+    // });
+
     $(document).on("click", getJqueryFormatSelectorFrom(deleteItemButtonClassName), (e) => {
-        const chosenItemNode = e.target.parentElement.parentElement.querySelector(getJqueryFormatSelectorFrom(wrapperForInnerTextClassName));
+        const chosenItemNode = e.target.parentElement.parentElement.parentElement.querySelector(getJqueryFormatSelectorFrom(wrapperForInnerTextClassName));
         const chosenStatus = toRemoveStatusForTask;
         const currentPageNumber = getCurrentPageByElementContentSearch(itemListArray, chosenItemNode.textContent);
 
         changeItemStateIfSelected(buttonType, itemListArray, chosenItemNode, chosenStatus);
         deleteAllElementsInArrayWithRemoveStatus();
         showItemListWithPaginationDevision(itemListArray, defaultStatusForTasksToShow, currentPageNumber);
-
-        return false;
     });
 
     $(document).on("dblclick", getJqueryFormatSelectorFrom(wrapperForInnerTextClassName), function(event) {
@@ -363,9 +396,11 @@ $(function () {
         const currentButtonValue = chooseAllButton.text();
         const itemStatus = getStatusForAction(currentButtonValue);
 
-        const itemNodeList = document.getElementsByClassName(elementClassName);
+        const itemNodeList = $(elementClassName);
         for (const itemNode of itemNodeList) {
-            changeItemStateIfSelected(checkboxType, itemListArray, itemNode, itemStatus);
+            console.log(itemNode);
+            const textContainerNode = itemNode.querySelector(getJqueryFormatSelectorFrom(wrapperForInnerTextClassName));
+            changeItemStateIfSelected(checkboxType, itemListArray, textContainerNode, itemStatus);
         }
 
         const newButtonName = oppositValue(currentButtonValue, selectAllStatusForSelectAllButton, deselectAllStatusForSelectAllButton);
