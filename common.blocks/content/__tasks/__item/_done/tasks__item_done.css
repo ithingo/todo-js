@@ -1,0 +1,4 @@
+.tasks__item_done {
+    text-decoration: line-through;
+    font-style: italic;
+}

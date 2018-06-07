@@ -86,7 +86,7 @@ function getHtmlTag(arrayElement, tag, selector) {
 }
 
 function createPaginationLinks(pageCount, tag) {
-    //Iterate through each generated page number and create pagination tabs for them
+    //Iterate through each generated page number and create pagination __tabs for them
     const paginationArrayNode = [...Array(pageCount).keys()].map(page => {
         return `<${tag} class="${paginationPageLinkClassName}">${page + 1}` + "<" + "/" + `${tag}>`;
     });

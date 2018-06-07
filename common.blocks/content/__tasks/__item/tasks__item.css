@@ -1,0 +1,19 @@
+@import url('_default/tasks__item_default.css');
+@import url('_done/tasks__item_done.css');
+
+.tasks__item {
+    display: flex;
+    flex-direction: row;
+    font-size: 20px;
+    line-height: 30px;
+    height: auto;
+}
+
+/*
+Temporary, just because of not correct parsing for text content of items containing X button font to mark close button
+*/
+.item__delete {
+    /*background: url("item_delete.png") no-repeat;*/
+    width: 25px;
+    height: 25px;
+}

@@ -1,0 +1,11 @@
+.tasks__list {
+    display: inline-block;
+    position: relative;
+    vertical-align: middle;
+    border: 20px solid lightskyblue;
+    list-style-type: none;
+    width: 400px;
+    padding: 20px;
+    margin: 0;
+    text-align: center;
+}
