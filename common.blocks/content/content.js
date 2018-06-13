@@ -9,8 +9,8 @@ const counterLabelUnchecked = $("#counter_label_unchecked");
 const paginationPannel = $("#pagination_panel");
 
 const itemClassName = "tasks__item";
-const defaultStatusClassName = "tasks__item_default";
-const doneStatusClassName = "tasks__item_done";
+const defaultStatusClassName = "";
+const doneStatusClassName = "content__text_done";
 const labelForActionsClassName = "item__label";
 const deleteItemButtonClassName = "item__delete";
 const wrapperForInnerTextClassName = "item__textwrapper";
@@ -19,6 +19,7 @@ const itemGhostInputFieldClassName = "item__ghost";
 const paginationPageLinkClassName = "pagination__link";
 const tabsSwitchClassName = "tabs__link";
 const counterValueClassName = "counter__value";
+const contentTextClassName = "content__text";
 
 const showCompletedTabName = "Completed";
 const showNotCompletedTabName = "Not completed";
@@ -88,13 +89,15 @@ $(function() {
             const { id: itemIndex, text: itemText, checked: itemChecked } = item;
             const taskStatusSelector = itemChecked ? doneStatusClassName : defaultStatusClassName;
             const checkedStatus = itemChecked ? "checked" : "";
-            const finalSelectorForTag = itemClassName + " " + taskStatusSelector + " list-group-item" + " input-group mb-3";
+            const finalSelectorForTag = itemClassName + " "  + " mb-3";
             const template = `<li id="${itemIndex}" class="${finalSelectorForTag}">
                                 <div class="${labelForActionsClassName + " input-group-prepend"}">
                                     <button type="button" class="${deleteItemButtonClassName + " btn btn-danger"}">Delete</button>
                                     <input type="checkbox" class="${checkboxClassName}" ${checkedStatus}>
                                 </div>
-                                <div class="${wrapperForInnerTextClassName}">${itemText}</div>
+                                <div class="${contentTextClassName + " " + taskStatusSelector}">
+                                    <div class="${wrapperForInnerTextClassName}">${itemText}</div>
+                                </div>
                             </li>`;
             htmlTags += template;
         }
@@ -153,6 +156,7 @@ $(function() {
         const foundedItem = _.find(itemArray, { id: chosenItemIndex });
         // foundedItem.checked = foundedItem.checked? false : true;
         foundedItem.checked = !foundedItem.checked;
+
         const activePage = getCurrentPageByElementId(chosenItemIndex);
         bufferedArray = getPartOfArrayForPagination(activePage);
 
@@ -217,7 +221,7 @@ $(function() {
 
     $(document).on("keyup", "."+itemGhostInputFieldClassName, function(e) {
         if (e.which === enterKey) {
-            const chosenItemTag = e.target.parentElement;
+            const chosenItemTag = e.target.parentElement.parentElement;
             const chosenItemIndex = parseInt(chosenItemTag.id);
             const newValue = $("."+itemGhostInputFieldClassName).val();
             const foundedItem = _.find(itemArray, { id: chosenItemIndex });
