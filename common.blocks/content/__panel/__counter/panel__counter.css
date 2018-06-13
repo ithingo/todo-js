@@ -3,6 +3,6 @@
 
 .panel__counter {
 	display: flex;
-	flex-direction: row;
+	flex-direction: column;
 	/*border: none;*/
 }

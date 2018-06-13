@@ -17,39 +17,40 @@
                 <button id="choose_all_button" class="panel__button panel__button_chooseall btn btn-warning btn-lg">Select all</button>
                 <button id="delete_all_button" class="panel__button panel__button_deleteall btn btn-danger btn-lg">Delete all</button>
             </div>
-
-            <ul id="panel_counter" class="panel__counter list-group counter">
-                <li id="counter_label_all" class="list-group-item counter__label">All:</span>
-                    <span class="counter__value">0</span>
-                </li>
-                <li id="counter_label_checked" class="list-group-item counter__label">Checked:</span>
-                    <span class="counter__value">0</span>
-                </li>
-                <li id="counter_label_unchecked" class="list-group-item counter__label">Unchecked:</span>
-                    <span class="counter__value">0</span>
-                </li>
-            </ul>
         </div>
 
         <div class="content__form form">
-            <div class="input-group input-group-lg">
-                <div class="input-group-prepend">
-                    <span class="input-group-text" id="inputGroup-sizing-lg">Type to add</span>
-                </div>
+            <div class="form__group input-group input-group-lg">
                 <input id="form_input" class="form-control" aria-label="Type to add" aria-describedby="inputGroup-sizing-default" type="text" >
             </div>
 
-            <button id="add_button" class="form__button form__button_add btn btn-primary btn-lg" >Add</button>
+            <dib class="btn-group">
+                <button id="add_button" class="form__button btn btn-primary btn-lg" >Add</button>
+            </dib>
         </div>
 
-        <div class="content__tabs tabs list-group" role="tablist">
+        <div class="content__tabs tabs" role="tablist">
             <a id="current_tab" class="tabs__link" data-toggle="list" href="#" role="tab">All</a>
             <a class="tabs__link" data-toggle="list" href="#" role="tab">Completed</a>
             <a class="tabs__link" data-toggle="list" href="#" role="tab">Not completed</a>
         </div>
 
-        <div class="content__tasks tasks">
-            <ul id="task_list" class="tasks__list list-group"></ul>
+        <div class="content__group">
+            <div class="content__tasks tasks">
+                <ul id="task_list" class="tasks__list list-group"></ul>
+            </div>
+
+            <ul id="panel_counter" class="panel__counter  counter">
+                <li id="counter_label_all" class=" counter__label">All:</span>
+                    <span class="counter__value">0</span>
+                </li>
+                <li id="counter_label_checked" class=" counter__label">Checked:</span>
+                    <span class="counter__value">0</span>
+                </li>
+                <li id="counter_label_unchecked" class=" counter__label">Unchecked:</span>
+                    <span class="counter__value">0</span>
+                </li>
+            </ul>
         </div>
 
         <ul id="pagination_panel" class="content__pagination pagination"></ul>

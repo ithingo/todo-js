@@ -1,6 +1,6 @@
 .tabs__link {
     width: 150px;
-    margin: 0 10px;
+    /*margin: 0 10px;*/
     /*background-color: darkcyan;*/
     font-size: 20px;
     color: darkcyan;
@@ -13,8 +13,8 @@
 .tabs__link:hover {
     cursor: pointer;
     text-decoration: none;
-    border: 1px solid red;
-    color: red;
+    border: 1px solid darkblue;
+    color: darkblue;
 }
 
 .tabs__link:active {

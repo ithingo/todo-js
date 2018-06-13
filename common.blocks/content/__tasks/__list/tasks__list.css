@@ -2,9 +2,10 @@
     display: inline-block;
     position: relative;
     vertical-align: middle;
-    border: 20px solid lightskyblue;
+    border: 2px solid darkcyan;
     list-style-type: none;
-    width: 400px;
+    width: 450px;
+    height: 266px;
     padding: 20px;
     margin: 0;
     text-align: center;

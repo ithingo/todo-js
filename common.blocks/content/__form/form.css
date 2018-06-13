@@ -4,4 +4,13 @@
 .form {
     display: flex;
     flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    vertical-align: middle;
+
+}
+
+.form__group {
+    display: flex;
+    flex-direction: row;
 }
