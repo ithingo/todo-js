@@ -1,4 +1,8 @@
+@import url("__label/__counter__label.css");
+@import url("__value/__counter__value.css");
+
 .panel__counter {
 	display: flex;
 	flex-direction: row;
+	/*border: none;*/
 }

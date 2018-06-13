@@ -38,7 +38,7 @@ function getCurrentPage(array) {
    return Math.ceil(array.length / itemsOnOnePageCount);
 }
 
-function getCurrentPageByElementId(itemIndex) {
+function getCurrentPageByElementId(itemIndex = 0) {
     const currentPage = itemIndex ? (itemIndex + 1) / itemsOnOnePageCount : defaultPage;
     return Math.ceil(currentPage);
 }
@@ -88,10 +88,10 @@ $(function() {
             const { id: itemIndex, text: itemText, checked: itemChecked } = item;
             const taskStatusSelector = itemChecked ? doneStatusClassName : defaultStatusClassName;
             const checkedStatus = itemChecked ? "checked" : "";
-            const finalSelectorForTag = itemClassName + " " + taskStatusSelector;
+            const finalSelectorForTag = itemClassName + " " + taskStatusSelector + " list-group-item" + " input-group mb-3";
             const template = `<li id="${itemIndex}" class="${finalSelectorForTag}">
-                                <div class="${labelForActionsClassName}">
-                                    <button type="button" class="${deleteItemButtonClassName + ' ' + 'btn close'}" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <div class="${labelForActionsClassName + " input-group-prepend"}">
+                                    <button type="button" class="${deleteItemButtonClassName + " btn btn-danger"}">Delete</button>
                                     <input type="checkbox" class="${checkboxClassName}" ${checkedStatus}>
                                 </div>
                                 <div class="${wrapperForInnerTextClassName}">${itemText}</div>
@@ -151,7 +151,8 @@ $(function() {
         const chosenItemTag = e.target.parentElement.parentElement;
         const chosenItemIndex = parseInt(chosenItemTag.id);
         const foundedItem = _.find(itemArray, { id: chosenItemIndex });
-        foundedItem.checked = foundedItem.checked? false : true;
+        // foundedItem.checked = foundedItem.checked? false : true;
+        foundedItem.checked = !foundedItem.checked;
         const activePage = getCurrentPageByElementId(chosenItemIndex);
         bufferedArray = getPartOfArrayForPagination(activePage);
 
@@ -181,12 +182,16 @@ $(function() {
     }
 
     $(document).on("click", "."+deleteItemButtonClassName, function(e) {
-        const chosenItemTag = e.target.parentElement.parentElement.parentElement;
+        const chosenItemTag = e.target.parentElement.parentElement;
+        console.log(chosenItemTag);
         const chosenItemIndex = parseInt(chosenItemTag.id);
+        console.log(itemArray);
         deleteWithIndexUpdating(chosenItemIndex);
+        console.log(itemArray);
 
-        const activePage = getCurrentPageByElementId(chosenItemIndex - 1);
+        const activePage = getCurrentPageByElementId(chosenItemIndex);
         bufferedArray = getPartOfArrayForPagination(activePage);
+        console.log(bufferedArray);
 
         repaintTags(bufferedArray);
         repaintPagination(itemArray, 0);

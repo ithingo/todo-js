@@ -12,36 +12,41 @@
     <div class="content">
         <div class="content__title">Todo with JS & jQuery</div>
 
-        <div class="content__panel panel">
-            <button id="delete_all_button" class="panel__button panel__button_deleteall">Delete all</button>
-            <button id="choose_all_button" class="panel__button panel__button_chooseall">Select all</button>
-            <div id="panel_counter" class="panel__counter counter">
-                <div id="counter_label_all">
-                    <span class="counter__label">All:</span>
-                    <span class="counter__value">0</span>
-                </div>
-                <div id="counter_label_checked">
-                    <span class="counter__label">Checked:</span>
-                    <span class="counter__value">0</span>
-                </div>
-                <div id="counter_label_unchecked">
-                    <span class="counter__label">Unchecked:</span>
-                    <span class="counter__value">0</span>
-                </div>
-                </div>
+        <div class="content__panel btn-toolbar mb-3"  role="toolbar" aria-label="Toolbar with button groups">
+            <div class="btn-group mr-2" role="group" aria-label="First group">
+                <button id="choose_all_button" class="panel__button panel__button_chooseall btn btn-warning btn-lg">Select all</button>
+                <button id="delete_all_button" class="panel__button panel__button_deleteall btn btn-danger btn-lg">Delete all</button>
             </div>
+
+            <ul id="panel_counter" class="panel__counter list-group counter">
+                <li id="counter_label_all" class="list-group-item counter__label">All:</span>
+                    <span class="counter__value">0</span>
+                </li>
+                <li id="counter_label_checked" class="list-group-item counter__label">Checked:</span>
+                    <span class="counter__value">0</span>
+                </li>
+                <li id="counter_label_unchecked" class="list-group-item counter__label">Unchecked:</span>
+                    <span class="counter__value">0</span>
+                </li>
+            </ul>
         </div>
 
         <div class="content__form form">
-            <input id="form_input" class="form__input" aria-label="Default" aria-describedby="inputGroup-sizing-default" type="text" >
-            <button id="add_button" class="form__button form__button_add btn btn-outline-secondary" >Add</button>
+            <div class="input-group input-group-lg">
+                <div class="input-group-prepend">
+                    <span class="input-group-text" id="inputGroup-sizing-lg">Type to add</span>
+                </div>
+                <input id="form_input" class="form-control" aria-label="Type to add" aria-describedby="inputGroup-sizing-default" type="text" >
+            </div>
+
+            <button id="add_button" class="form__button form__button_add btn btn-primary btn-lg" >Add</button>
         </div>
 
-        <ul class="content__tabs tabs">
-            <li id="current_tab" class="tabs__link" data-tab="tab-all">All</li>
-            <li class="tabs__link" data-tab="tab-done">Completed</li>
-            <li class="tabs__link" data-tab="tab-undone">Not completed</li>
-        </ul>
+        <div class="content__tabs tabs list-group" role="tablist">
+            <a id="current_tab" class="tabs__link" data-toggle="list" href="#" role="tab">All</a>
+            <a class="tabs__link" data-toggle="list" href="#" role="tab">Completed</a>
+            <a class="tabs__link" data-toggle="list" href="#" role="tab">Not completed</a>
+        </div>
 
         <div class="content__tasks tasks">
             <ul id="task_list" class="tasks__list list-group"></ul>

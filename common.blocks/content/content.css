@@ -1,10 +1,16 @@
 @import url('__form/form.css');
 @import url('__tasks/tasks.css');
 @import url('__tabs/tabs.css');
-@import url('__panel/content__panel.css');
+@import url('__panel/__content__panel.css');
 @import url('__title/content__title.css');
 
 .content {
+    /*display: block;*/
+    /*margin-left: auto;*/
+    /*margin-right: auto;*/
+    background-color: aliceblue;
+
+
     display: flex;
     justify-content: center;
     align-items: center;

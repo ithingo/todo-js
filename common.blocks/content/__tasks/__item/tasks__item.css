@@ -8,12 +8,3 @@
     line-height: 30px;
     height: auto;
 }
-
-/*
-Temporary, just because of not correct parsing for text content of items containing X button font to mark close button
-*/
-.item__delete {
-    /*background: url("item_delete.png") no-repeat;*/
-    width: 25px;
-    height: 25px;
-}
