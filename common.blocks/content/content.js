@@ -17,15 +17,13 @@ const wrapperForInnerTextClassName = "item__textwrapper";
 const checkboxClassName = "item__checkbox";
 const itemGhostInputFieldClassName = "item__ghost";
 const paginationPageLinkClassName = "pagination__link";
-const paginationActivePageClassName = "pagination__link_current";
 const tabsSwitchClassName = "tabs__link";
-const tabsSwitchActiveStateClassName = "tabs__link_current";
 
-const showAllTabName = "All";
 const showCompletedTabName = "Completed";
 const showNotCompletedTabName = "Not completed";
 
 const currentPageId = "current_page";
+const currentTabId = "current_tab";
 
 const enterKey = 13;
 const defaultPage = 1;
@@ -35,8 +33,13 @@ let itemArray = Array();
 let bufferedArray = Array();
 let index = 0;
 
-function getCurrentPageNumber(array) {
+function getCurrentPage(array) {
    return Math.ceil(array.length / itemsOnOnePageCount);
+}
+
+function getCurrentPageByElementId(itemIndex) {
+    const currentPage = itemIndex ? (itemIndex + 1) / itemsOnOnePageCount : defaultPage;
+    return Math.ceil(currentPage);
 }
 
 function setActiveStateForPage(pageNumber) {
@@ -44,13 +47,21 @@ function setActiveStateForPage(pageNumber) {
     for (const tabNode of pageNodes) {
         if (tabNode.hasAttribute("id")) {
             tabNode.removeAttribute("id");
-            tabNode.removeAttribute("class", paginationActivePageClassName);
         }
         if (tabNode.textContent === pageNumber.toString()) {
             tabNode.setAttribute("id", currentPageId);
-            tabNode.setAttribute("class", paginationActivePageClassName);
         }
     }
+}
+
+function getPartOfArrayForPagination(pageNumber) {
+    const startIndex = itemArray.length - (itemArray.length - itemsOnOnePageCount * (pageNumber - 1));
+    let endIndex = startIndex + itemsOnOnePageCount;
+
+    if (endIndex >= itemArray.length) {
+        endIndex = itemArray.length;
+    }
+    return _.slice(itemArray, startIndex, endIndex);
 }
 
 $(function() {
@@ -58,31 +69,25 @@ $(function() {
 
     function addTodo() {
         const text = inputField.val().trim();
-
         if (text) {
             const newObject = {
                 id: index,
                 text: text,
                 checked: false,
             };
-
             itemArray.push(newObject);
             index += 1;
-
             inputField.val("");
         }
     }
 
     function repaintTags(array = itemArray) {
         let htmlTags = "";
-
         for (const item of array) {
             const { id: itemIndex, text: itemText, checked: itemChecked } = item;
-
             const taskStatusSelector = itemChecked ? doneStatusClassName : defaultStatusClassName;
             const checkedStatus = itemChecked ? "checked" : "";
             const finalSelectorForTag = itemClassName + " " + taskStatusSelector;
-
             const template = `<li id="${itemIndex}" class="${finalSelectorForTag}">
                                 <div class="${labelForActionsClassName}">
                                     <button type="button" class="${deleteItemButtonClassName + ' ' + 'btn close'}" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -92,80 +97,83 @@ $(function() {
                             </li>`;
             htmlTags += template;
         }
-
         taskListUlNode.html("");
         taskListUlNode.append(htmlTags);
     }
 
     function repaintPagination(array = itemArray, activePage = 0) {
         if (!activePage) {   //falsy value, current page isn't set 
-            activePage = getCurrentPageNumber(array);
+            activePage = getCurrentPage(array);
         }
-
         let paginationTags = "";
         for (let page = 0; page < activePage; page++) {
             const template = `<li class="${paginationPageLinkClassName}">${page + 1}</li>`;
             paginationTags += template;
         }
- 
         paginationPannel.html(paginationTags);
         setActiveStateForPage(activePage);
     }
 
-    // !!!!!!!!!!!!!!!
-    // function updateCounters() {
-    //     const checkedTasks = _.filter(itemArray, item => { return item.checked });
-    //     const uncheckedTasks = _.filter(itemArray, item => { return !item.checked});
+    function updateCounters() {
+        const checkedTasks = _.filter(itemArray, item => { return item.checked; });
+        const uncheckedTasks = _.filter(itemArray, item => { return !item.checked; });
 
-    //     counterLabelAll.text(itemArray.length);
-    //     counterLabelChecked.text(checkedTasks.length);
-    //     counterLabelUnchecked.text(uncheckedTasks.length);
-    // }
+        counterLabelAll.text(itemArray.length);
+        counterLabelChecked.text(checkedTasks.length);
+        counterLabelUnchecked.text(uncheckedTasks.length);
+    }
 
     addButton.click(function() {
         addTodo();
-        repaintTags();
-        repaintPagination();
-        // updateCounters();
+        const activePage = getCurrentPage(itemArray);
+        bufferedArray = getPartOfArrayForPagination(activePage);
+
+        repaintTags(bufferedArray);
+        repaintPagination(itemArray, 0);
+        updateCounters();
         return false;
     });
 
     inputField.keypress(function(e) {
         if (e.which === enterKey) {
             addTodo();
-            repaintTags();
-            repaintPagination();
+            const activePage = getCurrentPage(itemArray);
+            bufferedArray = getPartOfArrayForPagination(activePage);
 
-            // updateCounters();
+            repaintTags(bufferedArray);
+            repaintPagination(itemArray, 0);
+            updateCounters();
         }
     });
 
-    $(document).on("change", '.'+checkboxClassName, function(e) {
+    $(document).on("change", "."+checkboxClassName, function(e) {
         const chosenItemTag = e.target.parentElement.parentElement;
         const chosenItemIndex = parseInt(chosenItemTag.id);
         const foundedItem = _.find(itemArray, { id: chosenItemIndex });
         foundedItem.checked = foundedItem.checked? false : true;
+        const activePage = getCurrentPageByElementId(chosenItemIndex);
+        bufferedArray = getPartOfArrayForPagination(activePage);
 
-        repaintTags();
-        repaintPagination();
-        // updateCounters();
+        repaintTags(bufferedArray);
+        repaintPagination(itemArray, 0);
+        updateCounters();
     });
 
     chooseAllButton.click(function() {
         for (let index = 0; index < itemArray.length; index++) {
             itemArray[index].checked = true;
         }
-        console.log(itemArray);
+        const activePage = getCurrentPage(itemArray);
+        bufferedArray = getPartOfArrayForPagination(activePage);
 
-        repaintTags();
-        repaintPagination();
-        // updateCounters();
+        repaintTags(bufferedArray);
+        repaintPagination(itemArray, 0);
+        updateCounters();
     });
 
     function deleteWithIndexUpdating(chosenItemIndex) {
         const foundedItem = _.find(itemArray, { id: chosenItemIndex });
         _.pull(itemArray, foundedItem);
-
         for (let index = 0; index < itemArray.length; index++) {
             itemArray[index].id = index;
         }
@@ -174,12 +182,14 @@ $(function() {
     $(document).on("click", "."+deleteItemButtonClassName, function(e) {
         const chosenItemTag = e.target.parentElement.parentElement.parentElement;
         const chosenItemIndex = parseInt(chosenItemTag.id);
-
         deleteWithIndexUpdating(chosenItemIndex);
 
-        repaintTags();
-        repaintPagination();
-        // updateCounters();
+        const activePage = getCurrentPageByElementId(chosenItemIndex - 1);
+        bufferedArray = getPartOfArrayForPagination(activePage);
+
+        repaintTags(bufferedArray);
+        repaintPagination(itemArray, 0);
+        updateCounters();
     });
 
     deleteAllButton.click(function() {
@@ -187,14 +197,12 @@ $(function() {
 
         repaintTags();
         repaintPagination();
-        // updateCounters();
+        updateCounters();
     });
 
     $(document).on("dblclick", "."+wrapperForInnerTextClassName, function(e) {
         const chosenItemTag = e.target.parentElement;
-        const chosenItemIndex = parseInt(chosenItemTag.id);
         const oldValue = e.target.innerText;
-        
         const ghostInputFieldNodeTag = `<input class="${itemGhostInputFieldClassName}" type="text" value="${oldValue}" />`;
         $(chosenItemTag).html(ghostInputFieldNodeTag);
 
@@ -205,32 +213,51 @@ $(function() {
         if (e.which === enterKey) {
             const chosenItemTag = e.target.parentElement;
             const chosenItemIndex = parseInt(chosenItemTag.id);
-            const newValue = $('.'+itemGhostInputFieldClassName).val();
-
+            const newValue = $("."+itemGhostInputFieldClassName).val();
             const foundedItem = _.find(itemArray, { id: chosenItemIndex });
             foundedItem.text = newValue;
 
-            repaintTags();
-            repaintPagination();
-            // updateCounters();
+            const activePage = getCurrentPageByElementId(chosenItemIndex);
+            bufferedArray = getPartOfArrayForPagination(activePage);
+
+            repaintTags(bufferedArray);
+            repaintPagination(itemArray, 0);
+            updateCounters();
         }
     });
 
     $(document).on("click", "."+tabsSwitchClassName, function(e) {
-        const currentTab = e.target.innerHTML;
-
-        if (currentTab === showCompletedTabName) {
-            bufferedArray = _.filter(itemArray, item => { return item.checked });
-
-        } else if (currentTab === showNotCompletedTabName) {
-            bufferedArray = _.filter(itemArray, item => { return !item.checked });
+        const currentTab = e.target;
+        const currentTabValue = currentTab.innerHTML;
+        if (currentTabValue === showCompletedTabName) {
+            bufferedArray = _.filter(itemArray, item => { return item.checked; });
+        } else if (currentTabValue === showNotCompletedTabName) {
+            bufferedArray = _.filter(itemArray, item => { return !item.checked; });
         } else {
             bufferedArray = itemArray;
         }
 
+        const activeTab = $("#"+currentTabId);
+        if (currentTabValue !== activeTab.innerHTML) {
+            activeTab.removeAttr("id");
+            currentTab.setAttribute("id", currentTabId);
+        }
+
         repaintTags(bufferedArray);
-        repaintPagination(array = bufferedArray);
-        // updateCounters();
-    })
+        repaintPagination(itemArray, 0);
+        updateCounters();
+    });
+
+    $(document).on("click", "."+paginationPageLinkClassName, function(e) {
+        const currentTab = e.target.innerHTML;
+        const activePage = parseInt(currentTab);
+        bufferedArray = getPartOfArrayForPagination(activePage);
+
+        repaintTags(bufferedArray);
+        repaintPagination(itemArray, 0);
+        setActiveStateForPage(activePage);
+        updateCounters();
+    });
+
 
 });
