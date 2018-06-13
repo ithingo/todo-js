@@ -247,13 +247,16 @@ $(function() {
             bufferedArray = itemArray;
         }
 
+        const activePage = getCurrentPage(bufferedArray);
+        const arrayForTabs = getPartOfArrayForPagination(activePage);
+
         const activeTab = $("#"+currentTabId);
         if (currentTabValue !== activeTab.innerHTML) {
             activeTab.removeAttr("id");
             currentTab.setAttribute("id", currentTabId);
         }
 
-        repaintTags(bufferedArray);
+        repaintTags(arrayForTabs);
         repaintPagination(itemArray, 0);
         updateCounters();
     });
@@ -261,9 +264,9 @@ $(function() {
     $(document).on("click", "."+paginationPageLinkClassName, function(e) {
         const currentTab = e.target.innerHTML;
         const activePage = parseInt(currentTab);
-        bufferedArray = getPartOfArrayForPagination(activePage);
+        const arrayForTabs = getPartOfArrayForPagination(activePage);
 
-        repaintTags(bufferedArray);
+        repaintTags(arrayForTabs);
         repaintPagination(itemArray, 0);
         setActiveStateForPage(activePage);
         updateCounters();

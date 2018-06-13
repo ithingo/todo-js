@@ -12,7 +12,15 @@
 }
 
 .item__checkbox {
-    width: 24px;
-    height: 24px;
+    width: 18px;
+    height: 18px;
     vertical-align: middle;
+}
+
+.item__textwrapper {
+    padding: 0 5px;
+    vertical-align: middle;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    width: 280px;
 }

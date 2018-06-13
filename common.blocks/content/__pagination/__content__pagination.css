@@ -1,0 +1,26 @@
+.content__pagination {
+    display: flex;
+    flex-direction: row;
+    padding-left: 0;
+    margin: 0;
+    list-style-type: none;
+    height: 40px;
+}
+
+.pagination__link {
+    width: 20px;
+    height: 20px;
+    background-color: darkcyan;
+    cursor: pointer;
+    text-align: center;
+}
+
+.pagination__link:hover {
+    color: aliceblue;
+    background-color: darkblue;
+}
+
+#current_page {
+    background-color: darkblue;
+    color: white;
+}

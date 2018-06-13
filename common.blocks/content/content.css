@@ -3,6 +3,16 @@
 @import url('__tabs/tabs.css');
 @import url('__panel/__content__panel.css');
 @import url('__title/content__title.css');
+@import url('__pagination/__content__pagination.css');
+
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 50px;
+
+}
 
 .content {
     background-color: aliceblue;
@@ -11,5 +21,8 @@
     align-items: center;
     flex-direction: column;
     padding: 50px;
+    width: 650px;
+    height: 800px;
+    border: 2px solid darkcyan;
 }
 
