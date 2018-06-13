@@ -1,445 +1,236 @@
-const duplicateMessage = "This task is already in the list!";
-const unknownActionMessage = "Unknown action!";
-const emptyInputFieldMessage = "Empty input field!";
+const taskListUlNode = $("#task_list");
+const inputField = $("#form_input");
+const addButton = $("#add_button");
+const deleteAllButton = $("#delete_all_button");
+const chooseAllButton = $("#choose_all_button");
+const counterLabelAll = $("counter_label_all");
+const counterLabelChecked = $("counter_label_checked");
+const counterLabelUnchecked = $("counter_label_unchecked");
+const paginationPannel = $("#pagination_panel");
 
-const selectAllStatusForSelectAllButton = "Select all";
-const deselectAllStatusForSelectAllButton = "Deselect all";
+const itemClassName = "tasks__item";
+const defaultStatusClassName = "tasks__item_default";
+const doneStatusClassName = "tasks__item_done";
+const labelForActionsClassName = "item__label";
+const deleteItemButtonClassName = "item__delete";
+const wrapperForInnerTextClassName = "item__textwrapper";
+const checkboxClassName = "item__checkbox";
+const itemGhostInputFieldClassName = "item__ghost";
+const paginationPageLinkClassName = "pagination__link";
+const paginationActivePageClassName = "pagination__link_current";
+const tabsSwitchClassName = "tabs__link";
+const tabsSwitchActiveStateClassName = "tabs__link_current";
+
 const showAllTabName = "All";
 const showCompletedTabName = "Completed";
 const showNotCompletedTabName = "Not completed";
 
-const inputField = $("#form_input");
-const itemsListParentNode = document.getElementById("task_list");
-
-const addButton = $("#add_button");
-const deleteAllButton = $("#delete_all_button");
-const chooseAllButton = $("#choose_all_button");
-const counterLabelForElementsArraySize = $("#counter_label");
-const paginationPannel = $("#pagination_panel");
-
-const tabsSwitchClassName = "tabs__link";
-const tabsSwitchActiveStateClassName = "tabs__link_current";
-const elementClassName = "tasks__item";
-const defaultStatusClassName = "tasks__item_default";
-const doneStatusClassName = "tasks__item_done";
-const labelForActionsClassName = "item__label";
-const wrapperForInnerTextClassName = "item__textwrapper";
-const checkboxClassName = "item__checkbox";
-const deleteItemButtonClassName = "item__delete";
-const deleteItemButtonSelectors = "item__delete btn close";
-const itemGhostInputFieldClassName = "item__ghost";
-const paginationPageLinkClassName = "pagination__link";
-
 const currentPageId = "current_page";
 
 const enterKey = 13;
-
-const defaultStatusForTasks = "undone";
-const doneStatusForTasks = "done";
-const toRemoveStatusForTask = "remove";
-const toKeepStatusForTask = "keep";
-
-const defaultStatusForTasksToShow = "all";
-const doneStatusForTasksToShow = "only_done";
-const undoneStatusForTasksToShow = "only_undone";
-
-const tagTypeForItems = "li";
-
-const buttonType = "button";
-const checkboxType = "checkbox";
-
-let itemListArray = Array();
-
+const defaultPage = 1;
 const itemsOnOnePageCount = 5;
-const defaultPageNumber = 1;
-const indexNotFound = -1;
+
+let itemArray = Array();
+let bufferedArray = Array();
 let index = 0;
-
-function addKeyupEvenListenerForInput() {
-    inputField.focus();
-    inputField.addEventListener("keyup", function(e) {
-        e.preventDefault();
-
-        if (e.which === enterKey) {
-            addButton.click();
-        }
-    });
-}
-
-function createObjectFromNewValue(inputedValue) {
-    return {
-        inputedContent: inputedValue,
-        statusOfProgress: defaultStatusForTasks,
-        removeStatus: toKeepStatusForTask
-    };
-}
-
-function getHtmlTag(arrayElement, tag, selector) {
-    const partWithCheckbox = `<input type="checkbox" class="${checkboxClassName}">`;
-    const partWithDeleteButton = `<button type="button" class="${deleteItemButtonSelectors}" aria-label="Close"><span aria-hidden="true">&times;</span></button>`;
-
-    const taskStatusSelector = arrayElement.statusOfProgress === defaultStatusForTasks ? defaultStatusClassName : doneStatusClassName;
-    const finalSelectorForTag = selector + " " + taskStatusSelector;
-
-    const groupForCheckboxAndButton = `<div class="${labelForActionsClassName}">${partWithDeleteButton + partWithCheckbox}</div>`;
-    const innerWrapperForTextContent = `<div class="${wrapperForInnerTextClassName}">${arrayElement.inputedContent}</div>`;
-
-    return `<${tag} class="${finalSelectorForTag}">` + groupForCheckboxAndButton + innerWrapperForTextContent + "<" + "/" + `${tag}>`;
-}
-
-function createPaginationLinks(pageCount, tag) {
-    //Iterate through each generated page number and create pagination __tabs for them
-    const paginationArrayNode = [...Array(pageCount).keys()].map(page => {
-        return `<${tag} class="${paginationPageLinkClassName}">${page + 1}` + "<" + "/" + `${tag}>`;
-    });
-    return _.join(paginationArrayNode, "");
-}
 
 function getCurrentPageNumber(array) {
    return Math.ceil(array.length / itemsOnOnePageCount);
 }
 
-function setActiveStateForPageNumber(pageNumber) {
-    const pageNodes = document.getElementsByClassName(paginationPageLinkClassName);
+function setActiveStateForPage(pageNumber) {
+    const pageNodes = $("."+paginationPageLinkClassName);
     for (const tabNode of pageNodes) {
         if (tabNode.hasAttribute("id")) {
             tabNode.removeAttribute("id");
+            tabNode.removeAttribute("class", paginationActivePageClassName);
         }
         if (tabNode.textContent === pageNumber.toString()) {
             tabNode.setAttribute("id", currentPageId);
+            tabNode.setAttribute("class", paginationActivePageClassName);
         }
     }
 }
 
-// function setActiveStateForTabs(clickedTab) {
-//     const switchingTabs = document.getElementsByClassName(tabsSwitchClassName);
-//     for (let i = 0; i < switchingTabs.length; i++) {
-//         if (switchingTabs[i].hasAttribute("class", tabsSwitchActiveStateClassName)) {
-//             switchingTabs[i].removeAttribute("class", tabsSwitchActiveStateClassName);
-//         }
-//         if (switchingTabs[i].textContent === clickedTab.toString()) {
-//             switchingTabs[i].setAttribute("id", currentPageId);
-//         }
-//     }
-// }
-
-function getArrayByObjectKeyWrapper(itemsArray, key, value) {
-    return _.filter(itemsArray, element => { element[key] === value; });
-}
-
-function getItemObjectsByCurrentStatus(itemsArray, statusToShow = defaultStatusForTasksToShow) {
-    switch (statusToShow) {
-        case doneStatusForTasksToShow:
-            return getArrayByObjectKeyWrapper(itemsArray, "statusOfProgress", doneStatusForTasks);
-        case undoneStatusForTasksToShow:
-            return getArrayByObjectKeyWrapper(itemsArray, "statusOfProgress", defaultStatusForTasks);
-        case  defaultStatusForTasksToShow:
-            return itemsArray;
-        default:
-            return itemsArray;
-    }
-}
-
-function createItemsTagsGroupFromArray(array, tag, selector, statusToShow) {
-    const newArray = getItemObjectsByCurrentStatus(array, statusToShow);
-    const itemsTaggedArray = _.map(newArray, element => {
-        if (element.removeStatus !== toRemoveStatusForTask) {
-            return getHtmlTag(element, tag, selector);
-        }
-    });
-    return _.join(itemsTaggedArray, "");
-}
-
-function deleteAllElementsInArrayWithRemoveStatus() {
-    itemListArray = _.filter(itemListArray, (element) => { return element.removeStatus !== toRemoveStatusForTask; });
-}
-
-function withdrawElements(itemList, itemListArray, itemsStatusToShowWithTabs) {
-    itemList.innerHTML = createItemsTagsGroupFromArray(itemListArray, tagTypeForItems, elementClassName, itemsStatusToShowWithTabs);
-}
-
-function getPartOfArrayForPagination(itemsArray, itemsOnePageCount, pageNumber) {
-    let startIndex = itemsArray.length - (itemsArray.length - itemsOnePageCount * (pageNumber - 1));
-    let endIndex = startIndex + itemsOnePageCount;
-
-    if (endIndex >= itemsArray.length) {
-        endIndex = itemsArray.length;
-    }
-    return _.slice(itemsArray, startIndex, endIndex);
-}
-
-function addElementToObjectsArray(array, inputField) {
-    const inputedValue = inputField.value;
-    if (inputedValue !== "") {
-        const indexOfFoundedObject = _.findIndex(array, ["inputedContent", inputedValue]);
-
-        if (indexOfFoundedObject === indexNotFound) {
-            const newElement = createObjectFromNewValue(inputedValue);
-            array.push(newElement);
-        } else {
-            alert(duplicateMessage);
-        }
-    }
-}
-
-function oppositValue(selector, firstAlternative, secondAlternative) {
-    return selector === firstAlternative ? secondAlternative : firstAlternative;
-}
-
-function changeItemStateIfSelected(elementType, listItemArray, chosenItemNode, chosenStatus) {
-    const indexOfFoundedObject = _.findIndex(itemListArray, ["inputedContent", chosenItemNode.textContent]);
-    switch (elementType) {
-        case buttonType:
-            listItemArray[indexOfFoundedObject].removeStatus = chosenStatus;
-            break;
-        case checkboxType:
-            listItemArray[indexOfFoundedObject].statusOfProgress = chosenStatus;
-            changeStatusForNode(chosenItemNode, chosenStatus);
-            break;
-        default:
-            alert(unknownActionMessage);
-            break;
-    }
-}
-
-function changeStatusForNode(currentNode, newStatus) {
-    const newClassName = newStatus === defaultStatusForTasks ? defaultStatusClassName : doneStatusClassName;
-    console.log(currentNode.classList);
-    // currentNode.classList.toggle(newClassName);
-    // currentNode.classList.toggle(oppositValue(newClassName, defaultStatusForTasks, doneStatusForTasks));
-    if (currentNode.classList.contains(newClassName)) {
-        currentNode.classList.remove(newClassName);
-        currentNode.classList.add(oppositValue(newClassName, defaultStatusForTasks, doneStatusForTasks));
-    } else {
-        currentNode.classList.remove(oppositValue(newClassName, defaultStatusForTasks, doneStatusForTasks));
-        currentNode.classList.add(newClassName);
-    }
-}
-
-function updateElement(oldValue, newValue) {
-    const indexOfFoundedObject = _.findIndex(itemListArray, ["inputedContent", oldValue]);
-
-    if (newValue !== "") {
-        itemListArray[indexOfFoundedObject].inputedContent = newValue;
-    } else {
-        alert(emptyInputFieldMessage);
-    }
-}
-
-function deleteAllObjectsFromArray() {
-    itemListArray = _.drop(itemListArray, itemListArray.length);
-}
-
-function getElementsCountByStatus(itemsArray, statusToShow) {
-    switch (statusToShow) {
-        case doneStatusForTasksToShow:
-            return getArrayByObjectKeyWrapper(itemsArray, "statusOfProgress", doneStatusForTasks).length;
-        case undoneStatusForTasksToShow:
-            return getArrayByObjectKeyWrapper(itemsArray, "statusOfProgress", defaultStatusForTasks).length;
-        case  defaultStatusForTasksToShow:
-            return itemsArray.length;
-        default:
-            return itemsArray.length;
-    }
-}
-
-function getStatusForAction(currentButtonValueString) {
-    return currentButtonValueString === selectAllStatusForSelectAllButton ? doneStatusForTasks : defaultStatusForTasks;
-}
-
-function updateElementsCountForStatus(statusToShow) {
-    const counterForElementsByStatus = getElementsCountByStatus(itemListArray, statusToShow);
-    counterLabelForElementsArraySize.text(counterForElementsByStatus);
-}
-
-function getJqueryFormatSelectorFrom(plainSelector) {
-    return "." + plainSelector;
-}
-
-function withdrawPaginationPannel(itemListArray, activePageNumber) {
-    const lastPageNumber = getCurrentPageNumber(itemListArray);
-    const paginationLinksString = createPaginationLinks(lastPageNumber, tagTypeForItems);
-    paginationPannel.html("");
-    paginationPannel.append(paginationLinksString);
-
-    setActiveStateForPageNumber(activePageNumber);
-}
-
-function showItemListWithPaginationDevision(array, itemStatus, activePageNumber, allElementsInArraySelection = false) {
-    const currentPageItemArray =  allElementsInArraySelection ? array : getPartOfArrayForPagination(array, itemsOnOnePageCount, activePageNumber);
-
-    withdrawElements(itemsListParentNode, currentPageItemArray, itemStatus);
-    withdrawPaginationPannel(itemListArray, activePageNumber);
-
-    updateElementsCountForStatus(itemStatus);
-}
-
-function getCurrentPageByElementContentSearch(itemsArray, elementTextContent) {
-    const index = _.findIndex(itemsArray, ["inputedContent", elementTextContent]);
-    const currentPage = index ? (index + 1) / itemsOnOnePageCount : defaultPageNumber;
-    return Math.ceil(currentPage);
-}
-
-//Short expression for $(document).ready(function(){...})
-$(function () {
-    // addKeyupEvenListenerForInput();
+$(function() {
+    inputField.focus();
 
     function addTodo() {
-        let text = inputField.trim();
-        if (text) {
-            const obj = {
-                test: text,
-                id: index,
-                check: false
-            };
-            itemListArray.push(obj);
-            index+=1;
+        const text = inputField.val().trim();
 
+        if (text) {
+            const newObject = {
+                id: index,
+                text: text,
+                checked: false,
+            };
+
+            itemArray.push(newObject);
+            index += 1;
+
+            inputField.val("");
         }
     }
 
-    addButton.click(() => {
-        addTodo();
+    function repaintTags(array = itemArray) {
+        let htmlTags = "";
 
+        for (const item of array) {
+            const { id: itemIndex, text: itemText, checked: itemChecked } = item;
+
+            const taskStatusSelector = itemChecked ? doneStatusClassName : defaultStatusClassName;
+            const checkedStatus = itemChecked ? "checked" : "";
+            const finalSelectorForTag = itemClassName + " " + taskStatusSelector;
+
+            const template = `<li id="${itemIndex}" class="${finalSelectorForTag}">
+                                <div class="${labelForActionsClassName}">
+                                    <button type="button" class="${deleteItemButtonClassName + ' ' + 'btn close'}" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <input type="checkbox" class="${checkboxClassName}" ${checkedStatus}>
+                                </div>
+                                <div class="${wrapperForInnerTextClassName}">${itemText}</div>
+                            </li>`;
+            htmlTags += template;
+        }
+
+        taskListUlNode.html("");
+        taskListUlNode.append(htmlTags);
+    }
+
+    function repaintPagination(array = itemArray, activePage = 0) {
+        if (!activePage) {   //falsy value, current page isn't set 
+            activePage = getCurrentPageNumber(array);
+        }
+
+        let paginationTags = "";
+        for (let page = 0; page < activePage; page++) {
+            const template = `<li class="${paginationPageLinkClassName}">${page + 1}</li>`;
+            paginationTags += template;
+        }
+ 
+        paginationPannel.html(paginationTags);
+        setActiveStateForPage(activePage);
+    }
+
+    // !!!!!!!!!!!!!!!
+    // function updateCounters() {
+    //     const checkedTasks = _.filter(itemArray, item => { return item.checked });
+    //     const uncheckedTasks = _.filter(itemArray, item => { return !item.checked});
+
+    //     counterLabelAll.text(itemArray.length);
+    //     counterLabelChecked.text(checkedTasks.length);
+    //     counterLabelUnchecked.text(uncheckedTasks.length);
+    // }
+
+    addButton.click(function() {
+        addTodo();
+        repaintTags();
+        repaintPagination();
+        // updateCounters();
         return false;
     });
 
-    inputField.keypress(function (e) {
+    inputField.keypress(function(e) {
         if (e.which === enterKey) {
             addTodo();
+            repaintTags();
+            repaintPagination();
+
+            // updateCounters();
         }
     });
 
-    $(document).on("change", getJqueryFormatSelectorFrom(checkboxClassName), (e) => {
+    $(document).on("change", '.'+checkboxClassName, function(e) {
+        const chosenItemTag = e.target.parentElement.parentElement;
+        const chosenItemIndex = parseInt(chosenItemTag.id);
+        const foundedItem = _.find(itemArray, { id: chosenItemIndex });
+        foundedItem.checked = foundedItem.checked? false : true;
 
-        const chosenItemNode = e.target.parentElement.parentElement.querySelector(getJqueryFormatSelectorFrom(wrapperForInnerTextClassName));
-        const chosenStatus = e.target.checked ? doneStatusForTasks : defaultStatusForTasks;
-
-        changeItemStateIfSelected(checkboxType, itemListArray, chosenItemNode, chosenStatus);
-        updateElementsCountForStatus(defaultStatusForTasksToShow);
+        repaintTags();
+        repaintPagination();
+        // updateCounters();
     });
 
-    // $(document).on("click", getJqueryFormatSelectorFrom(checkboxClassName), (e) => {
-    //     const chosenItemNode = e.target.parentElement.parentElement.querySelector(getJqueryFormatSelectorFrom(wrapperForInnerTextClassName));
-    //     console.log(chosenItemNode);
-    //     let chosenStatus = "";
-    //
-    //     if (e.target.checked) {
-    //         chosenStatus = doneStatusForTasks;
-    //     } else {
-    //         chosenStatus = defaultStatusForTasks;
-    //     }
-    //
-    //     changeItemStateIfSelected(checkboxType, itemListArray, chosenItemNode, chosenStatus);
-    //     updateElementsCountForStatus(defaultStatusForTasksToShow);
-    // });
+    chooseAllButton.click(function() {
+        for (let index = 0; index < itemArray.length; index++) {
+            itemArray[index].checked = true;
+        }
+        console.log(itemArray);
 
-    $(document).on("click", getJqueryFormatSelectorFrom(deleteItemButtonClassName), (e) => {
-        const chosenItemNode = e.target.parentElement.parentElement.parentElement.querySelector(getJqueryFormatSelectorFrom(wrapperForInnerTextClassName));
-        const chosenStatus = toRemoveStatusForTask;
-        const currentPageNumber = getCurrentPageByElementContentSearch(itemListArray, chosenItemNode.textContent);
-
-        changeItemStateIfSelected(buttonType, itemListArray, chosenItemNode, chosenStatus);
-        deleteAllElementsInArrayWithRemoveStatus();
-        showItemListWithPaginationDevision(itemListArray, defaultStatusForTasksToShow, currentPageNumber);
+        repaintTags();
+        repaintPagination();
+        // updateCounters();
     });
 
-    $(document).on("dblclick", getJqueryFormatSelectorFrom(wrapperForInnerTextClassName), function(event) {
-        const chosenItemNode = event.target.parentElement.querySelector(getJqueryFormatSelectorFrom(wrapperForInnerTextClassName));
-        let oldValue = chosenItemNode.innerText;
-        // const oldValue = chosenItemNode.innerText;
-        chosenItemNode.innerHTML = "";
+    function deleteWithIndexUpdating(chosenItemIndex) {
+        const foundedItem = _.find(itemArray, { id: chosenItemIndex });
+        _.pull(itemArray, foundedItem);
 
+        for (let index = 0; index < itemArray.length; index++) {
+            itemArray[index].id = index;
+        }
+    }
+
+    $(document).on("click", "."+deleteItemButtonClassName, function(e) {
+        const chosenItemTag = e.target.parentElement.parentElement.parentElement;
+        const chosenItemIndex = parseInt(chosenItemTag.id);
+
+        deleteWithIndexUpdating(chosenItemIndex);
+
+        repaintTags();
+        repaintPagination();
+        // updateCounters();
+    });
+
+    deleteAllButton.click(function() {
+        itemArray = [];
+
+        repaintTags();
+        repaintPagination();
+        // updateCounters();
+    });
+
+    $(document).on("dblclick", "."+wrapperForInnerTextClassName, function(e) {
+        const chosenItemTag = e.target.parentElement;
+        const chosenItemIndex = parseInt(chosenItemTag.id);
+        const oldValue = e.target.innerText;
+        
         const ghostInputFieldNodeTag = `<input class="${itemGhostInputFieldClassName}" type="text" value="${oldValue}" />`;
-        $(chosenItemNode).append(ghostInputFieldNodeTag);
+        $(chosenItemTag).html(ghostInputFieldNodeTag);
 
-        const ghostInput = event.target.parentElement.querySelector(getJqueryFormatSelectorFrom(itemGhostInputFieldClassName));
-        ghostInput.focus();
-
-        $(getJqueryFormatSelectorFrom(itemGhostInputFieldClassName)).focus(function(e) {
-            oldValue = e.target.value;
-
-            return false;
-        });
-
-        // $(getJqueryFormatSelectorFrom(itemGhostInputFieldClassName)).blur(function(e) {
-        //     $(getJqueryFormatSelectorFrom(itemGhostInputFieldClassName)).focus();
-        //
-        //     newValue = e.target.value;
-        // });
-
-
-        let newValue = "";
-
-        $(getJqueryFormatSelectorFrom(itemGhostInputFieldClassName)).keyup(function(e) {
-            if (e.which === enterKey) {
-                newValue = e.target.value;
-                updateElement(oldValue, newValue); //sometimes after blur event oldvalue === newvalue, FIX (if changed oldvalue = earlier got value)
-
-                const currentPageNumber = getCurrentPageByElementContentSearch(itemListArray, newValue);
-                showItemListWithPaginationDevision(itemListArray, defaultStatusForTasksToShow, currentPageNumber);
-
-                return false;
-            }
-        });
+        $("."+itemGhostInputFieldClassName).focus();
     });
 
-    deleteAllButton.click(() => {
-        deleteAllObjectsFromArray();
-        const activePage = defaultPageNumber;
-        showItemListWithPaginationDevision(itemListArray, doneStatusForTasksToShow, activePage);  // It doesn't matter what status, the array will be empty anymore
+    $(document).on("keyup", "."+itemGhostInputFieldClassName, function(e) {
+        if (e.which === enterKey) {
+            const chosenItemTag = e.target.parentElement;
+            const chosenItemIndex = parseInt(chosenItemTag.id);
+            const newValue = $('.'+itemGhostInputFieldClassName).val();
 
-        return false;
+            const foundedItem = _.find(itemArray, { id: chosenItemIndex });
+            foundedItem.text = newValue;
+
+            repaintTags();
+            repaintPagination();
+            // updateCounters();
+        }
     });
 
-    chooseAllButton.click(() => {
-        const currentButtonValue = chooseAllButton.text();
-        const itemStatus = getStatusForAction(currentButtonValue);
+    $(document).on("click", "."+tabsSwitchClassName, function(e) {
+        const currentTab = e.target.innerHTML;
 
-        const itemNodeList = $(elementClassName);
-        for (const itemNode of itemNodeList) {
-            console.log(itemNode);
-            const textContainerNode = itemNode.querySelector(getJqueryFormatSelectorFrom(wrapperForInnerTextClassName));
-            changeItemStateIfSelected(checkboxType, itemListArray, textContainerNode, itemStatus);
+        if (currentTab === showCompletedTabName) {
+            bufferedArray = _.filter(itemArray, item => { return item.checked });
+
+        } else if (currentTab === showNotCompletedTabName) {
+            bufferedArray = _.filter(itemArray, item => { return !item.checked });
+        } else {
+            bufferedArray = itemArray;
         }
 
-        const newButtonName = oppositValue(currentButtonValue, selectAllStatusForSelectAllButton, deselectAllStatusForSelectAllButton);
-        chooseAllButton.html(newButtonName);
+        repaintTags(bufferedArray);
+        repaintPagination(array = bufferedArray);
+        // updateCounters();
+    })
 
-        const activePage = defaultPageNumber;
-        const allElementsInArraySelection = true;
-        showItemListWithPaginationDevision(itemListArray, doneStatusForTasksToShow, activePage,  allElementsInArraySelection);
-
-        return false;
-    });
-
-    $(document).on("click", getJqueryFormatSelectorFrom(tabsSwitchClassName), (e) => {
-        let itemStatus = "";
-        switch (e.target.innerHTML) {
-            case showCompletedTabName:
-                itemStatus = doneStatusForTasksToShow;
-                break;
-            case showNotCompletedTabName:
-                itemStatus = undoneStatusForTasksToShow;
-                break;
-            case showAllTabName:
-                itemStatus = defaultStatusForTasksToShow;
-                break;
-            default:
-                itemStatus = defaultStatusForTasksToShow;
-                break;
-        }
-        const activePage = defaultPageNumber;
-
-        showItemListWithPaginationDevision(itemListArray, itemStatus, activePage);
-
-        return false;
-    });
-
-    $(document).on("click", getJqueryFormatSelectorFrom(paginationPageLinkClassName), (e) => {
-        const activePage = parseInt(e.target.innerHTML);
-        showItemListWithPaginationDevision(itemListArray, defaultStatusForTasksToShow, activePage);
-
-        return false;
-    });
 });

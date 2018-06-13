@@ -1,0 +1,4 @@
+.panel__counter {
+	display: flex;
+	flex-direction: row;
+}
