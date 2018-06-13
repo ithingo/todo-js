@@ -15,10 +15,20 @@
         <div class="content__panel panel">
             <button id="delete_all_button" class="panel__button panel__button_deleteall">Delete all</button>
             <button id="choose_all_button" class="panel__button panel__button_chooseall">Select all</button>
-            <div id="panel_counter" class="panel__counter">
-                <div id="counter_label_all"><span>All:</span>0</div>
-                <div id="counter_label_checked"><span>Checked:</span>0</div>
-                <div id="counter_label_unchecked"><span>Unchecked:</span>0</div>
+            <div id="panel_counter" class="panel__counter counter">
+                <div id="counter_label_all">
+                    <span class="counter__label">All:</span>
+                    <span class="counter__value">0</span>
+                </div>
+                <div id="counter_label_checked">
+                    <span class="counter__label">Checked:</span>
+                    <span class="counter__value">0</span>
+                </div>
+                <div id="counter_label_unchecked">
+                    <span class="counter__label">Unchecked:</span>
+                    <span class="counter__value">0</span>
+                </div>
+                </div>
             </div>
         </div>
 
@@ -34,7 +44,7 @@
         </ul>
 
         <div class="content__tasks tasks">
-            <ul id="task_list" class="tasks__list"></ul>
+            <ul id="task_list" class="tasks__list list-group"></ul>
         </div>
 
         <ul id="pagination_panel" class="content__pagination pagination"></ul>

@@ -3,9 +3,9 @@ const inputField = $("#form_input");
 const addButton = $("#add_button");
 const deleteAllButton = $("#delete_all_button");
 const chooseAllButton = $("#choose_all_button");
-const counterLabelAll = $("counter_label_all");
-const counterLabelChecked = $("counter_label_checked");
-const counterLabelUnchecked = $("counter_label_unchecked");
+const counterLabelAll = $("#counter_label_all");
+const counterLabelChecked = $("#counter_label_checked");
+const counterLabelUnchecked = $("#counter_label_unchecked");
 const paginationPannel = $("#pagination_panel");
 
 const itemClassName = "tasks__item";
@@ -18,6 +18,7 @@ const checkboxClassName = "item__checkbox";
 const itemGhostInputFieldClassName = "item__ghost";
 const paginationPageLinkClassName = "pagination__link";
 const tabsSwitchClassName = "tabs__link";
+const counterValueClassName = "counter__value";
 
 const showCompletedTabName = "Completed";
 const showNotCompletedTabName = "Not completed";
@@ -118,9 +119,9 @@ $(function() {
         const checkedTasks = _.filter(itemArray, item => { return item.checked; });
         const uncheckedTasks = _.filter(itemArray, item => { return !item.checked; });
 
-        counterLabelAll.text(itemArray.length);
-        counterLabelChecked.text(checkedTasks.length);
-        counterLabelUnchecked.text(uncheckedTasks.length);
+        counterLabelAll.children("."+counterValueClassName).text(itemArray.length);
+        counterLabelChecked.children("."+counterValueClassName).text(checkedTasks.length);
+        counterLabelUnchecked.children("."+counterValueClassName).text(uncheckedTasks.length);
     }
 
     addButton.click(function() {
