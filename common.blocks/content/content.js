@@ -87,8 +87,10 @@ $(function() {
         let htmlTags = "";
         for (const item of array) {
             const { id: itemIndex, text: itemText, checked: itemChecked } = item;
+
             const taskStatusSelector = itemChecked ? doneStatusClassName : defaultStatusClassName;
             const checkedStatus = itemChecked ? "checked" : "";
+
             const finalSelectorForTag = itemClassName + " "  + " mb-3";
             const template = `<li id="${itemIndex}" class="${finalSelectorForTag}">
                                 <div class="${labelForActionsClassName + " input-group-prepend"}">
@@ -99,6 +101,7 @@ $(function() {
                                     <div class="${wrapperForInnerTextClassName}">${itemText}</div>
                                 </div>
                             </li>`;
+
             htmlTags += template;
         }
         taskListUlNode.html("");
@@ -122,9 +125,9 @@ $(function() {
         const checkedTasks = _.filter(itemArray, item => { return item.checked; });
         const uncheckedTasks = _.filter(itemArray, item => { return !item.checked; });
 
-        counterLabelAll.children("."+counterValueClassName).text(itemArray.length);
-        counterLabelChecked.children("."+counterValueClassName).text(checkedTasks.length);
-        counterLabelUnchecked.children("."+counterValueClassName).text(uncheckedTasks.length);
+        counterLabelAll.siblings("."+counterValueClassName).text(itemArray.length);
+        counterLabelChecked.siblings("."+counterValueClassName).text(checkedTasks.length);
+        counterLabelUnchecked.siblings("."+counterValueClassName).text(uncheckedTasks.length);
     }
 
     addButton.click(function() {
@@ -187,15 +190,15 @@ $(function() {
 
     $(document).on("click", "."+deleteItemButtonClassName, function(e) {
         const chosenItemTag = e.target.parentElement.parentElement;
-        console.log(chosenItemTag);
+        // console.log(chosenItemTag);
         const chosenItemIndex = parseInt(chosenItemTag.id);
-        console.log(itemArray);
+        // console.log(itemArray);
         deleteWithIndexUpdating(chosenItemIndex);
-        console.log(itemArray);
+        // console.log(itemArray);
 
         const activePage = getCurrentPageByElementId(chosenItemIndex);
         bufferedArray = getPartOfArrayForPagination(activePage);
-        console.log(bufferedArray);
+        // console.log(bufferedArray);
 
         repaintTags(bufferedArray);
         repaintPagination(itemArray, 0);
@@ -239,6 +242,7 @@ $(function() {
     $(document).on("click", "."+tabsSwitchClassName, function(e) {
         const currentTab = e.target;
         const currentTabValue = currentTab.innerHTML;
+
         if (currentTabValue === showCompletedTabName) {
             bufferedArray = _.filter(itemArray, item => { return item.checked; });
         } else if (currentTabValue === showNotCompletedTabName) {
@@ -246,6 +250,12 @@ $(function() {
         } else {
             bufferedArray = itemArray;
         }
+
+        console.log(bufferedArray);
+
+        // здесь ыильтруется массив по той или иной вкладке
+        // этот отыильтрованный массив и надо делить на нужные части (уже не по текущей странице, а по возможности, т.к. массив меньше исходного)
+        // я же перерисовываю в repaint() исходный массив
 
         const activePage = getCurrentPage(bufferedArray);
         const arrayForTabs = getPartOfArrayForPagination(activePage);
