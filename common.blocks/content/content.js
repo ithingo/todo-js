@@ -81,6 +81,13 @@ $(function() {
             index += 1;
             inputField.val("");
         }
+
+        const arrayForCheck = _.filter(itemArray, item => { return item.checked; });
+        if (arrayForCheck.length !== itemArray.length) {
+            chooseAllCheckbox.prop("checked", false);
+        } else {
+            chooseAllCheckbox.prop("checked", true);
+        }
     }
 
     function repaintTags(array = itemArray) {
@@ -164,6 +171,13 @@ $(function() {
         const currentTabValue = currentTab.text();
         bufferedArray = getFilteredArray(currentTabValue);
 
+        const arrayForCheck = _.filter(bufferedArray, item => { return item.checked; });
+        if (arrayForCheck.length !== bufferedArray.length) {
+            chooseAllCheckbox.prop("checked", false);
+        } else {
+            chooseAllCheckbox.prop("checked", true);
+        }
+
         const activePage = getCurrentPageByElementId(chosenItemIndex); // -1
         const arrayForTab = getPartOfArrayForPagination(activePage, bufferedArray);
 
@@ -185,8 +199,6 @@ $(function() {
 
         const activePage = getCurrentPage(itemArray);
         bufferedArray = getPartOfArrayForPagination(activePage);
-
-
 
         repaintTags(bufferedArray);
         repaintPagination(itemArray, 0);
