@@ -219,21 +219,24 @@ $(function() {
     }
 
     function updateWithGhostInput(e) {
-        if (e.which === enterKey) {
-            const chosenItemTag = e.target.parentElement.parentElement;
-            const chosenItemIndex = parseInt(chosenItemTag.id);
-            
-            const newValue = $("."+itemGhostInputFieldClassName).val();
-            const foundedItem = _.find(itemArray, { id: chosenItemIndex });
+        const chosenItemTag = e.target.parentElement.parentElement;
+        const chosenItemIndex = parseInt(chosenItemTag.id);
+
+        const foundedItem = _.find(itemArray, { id: chosenItemIndex });
+        const oldValue = foundedItem.text;
+        const newValue = $("."+itemGhostInputFieldClassName).val();
+        if (newValue) {
             foundedItem.text = newValue;
-
-            const activePage = getCurrentPageByElementId(chosenItemIndex);
-            bufferedArray = getPartOfArrayForPagination(activePage);
-
-            repaintTags(bufferedArray);
-            repaintPagination(itemArray, 0);
-            updateCounters();
+        } else {
+            foundedItem.text = oldValue;
         }
+
+        const activePage = getCurrentPageByElementId(chosenItemIndex);
+        bufferedArray = getPartOfArrayForPagination(activePage);
+
+        repaintTags(bufferedArray);
+        repaintPagination(itemArray, 0);
+        updateCounters();
     }
 
     function getFilteredArray(currentTabValue) {
@@ -316,6 +319,12 @@ $(function() {
     });
 
     $(document).on("keyup", "."+itemGhostInputFieldClassName, function(e) {
+        if (e.which === enterKey) {
+            updateWithGhostInput(e);
+        }
+    });
+
+    $(document).on("blur", "."+itemGhostInputFieldClassName, function(e) {
         updateWithGhostInput(e);
     });
 
