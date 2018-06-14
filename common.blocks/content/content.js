@@ -109,7 +109,7 @@ $(function() {
     }
 
     function repaintPagination(array = itemArray, activePage = 0) {
-        if (!activePage) {   //falsy value, current page isn't set 
+        if (!activePage) {    
             activePage = getCurrentPage(array);
         }
         let paginationTags = "";
@@ -157,7 +157,6 @@ $(function() {
         const chosenItemTag = e.target.parentElement.parentElement;
         const chosenItemIndex = parseInt(chosenItemTag.id);
         const foundedItem = _.find(itemArray, { id: chosenItemIndex });
-        // foundedItem.checked = foundedItem.checked? false : true;
         foundedItem.checked = !foundedItem.checked;
 
         const activePage = getCurrentPageByElementId(chosenItemIndex);
@@ -183,6 +182,7 @@ $(function() {
     function deleteWithIndexUpdating(chosenItemIndex) {
         const foundedItem = _.find(itemArray, { id: chosenItemIndex });
         _.pull(itemArray, foundedItem);
+
         for (let index = 0; index < itemArray.length; index++) {
             itemArray[index].id = index;
         }
@@ -190,15 +190,11 @@ $(function() {
 
     function deleteItemEventHandler(e) {
         const chosenItemTag = e.target.parentElement.parentElement;
-        // console.log(chosenItemTag);
         const chosenItemIndex = parseInt(chosenItemTag.id);
-        // console.log(itemArray);
         deleteWithIndexUpdating(chosenItemIndex);
-        // console.log(itemArray);
 
         const activePage = getCurrentPageByElementId(chosenItemIndex);
         bufferedArray = getPartOfArrayForPagination(activePage);
-        // console.log(bufferedArray);
 
         repaintTags(bufferedArray);
         repaintPagination(itemArray, 0);
@@ -226,6 +222,7 @@ $(function() {
         if (e.which === enterKey) {
             const chosenItemTag = e.target.parentElement.parentElement;
             const chosenItemIndex = parseInt(chosenItemTag.id);
+            
             const newValue = $("."+itemGhostInputFieldClassName).val();
             const foundedItem = _.find(itemArray, { id: chosenItemIndex });
             foundedItem.text = newValue;
@@ -239,9 +236,8 @@ $(function() {
         }
     }
 
-    function switchBetweenTabs(e) {
-        const currentTab = e.target;
-        const currentTabValue = currentTab.innerHTML;
+    function getFilteredArray(currentTabValue) {
+        let bufferedArray = [];
 
         if (currentTabValue === showCompletedTabName) {
             bufferedArray = _.filter(itemArray, item => { return item.checked; });
@@ -249,26 +245,23 @@ $(function() {
             bufferedArray = _.filter(itemArray, item => { return !item.checked; });
         } else {
             bufferedArray = itemArray;
-            alert("im here");
         }
 
         for (let index = 0; index < bufferedArray.length; index++) {
             bufferedArray[index].id = index;
         }
 
-        console.log("hhh");
-        console.log(bufferedArray);
+        return bufferedArray;
+    }
 
-        //!! buffered array
+    function switchBetweenTabs(e) {
+        const currentTab = e.target;
+        const currentTabValue = currentTab.innerHTML;
+
+        bufferedArray = getFilteredArray(currentTabValue);
 
         const activePage = getCurrentPage(bufferedArray);
-
-        console.log("pge:");
-        console.log(activePage);
-
-        const arrayForTabs = getPartOfArrayForPagination(activePage, bufferedArray);   //here should pass the buffered array!!!!
-
-        console.log(arrayForTabs);
+        const arrayForTabs = getPartOfArrayForPagination(activePage, bufferedArray);  
 
         const activeTab = $("#"+currentTabId);
         if (currentTabValue !== activeTab.innerHTML) {
@@ -282,13 +275,19 @@ $(function() {
     }
 
     function paginationSwitcher(e) {
-        const currentTab = e.target.innerHTML;
-        const activePage = parseInt(currentTab);
-        const bufferedArray = getPartOfArrayForPagination(activePage);
+        const currentPaginationTab = e.target.innerHTML;
+        const activePage = parseInt(currentPaginationTab);
 
-        repaintTags(bufferedArray);
-        repaintPagination(itemArray, 0);
-        setActiveStateForPage(activePage);
+        const currentTab = $("#"+currentTabId);
+        const currentTabValue = currentTab.text();
+
+        bufferedArray = getFilteredArray(currentTabValue);
+
+        const numberForPagination = getCurrentPage(bufferedArray);
+        const arrayForTabs = getPartOfArrayForPagination(activePage, bufferedArray);  
+
+        repaintTags(arrayForTabs);
+        repaintPagination(arrayForTabs, numberForPagination);
         updateCounters();
     }
 
