@@ -20,7 +20,7 @@
     background-color: darkblue;
 }
 
-#current_page {
+.pagination__link_active {
     background-color: darkblue;
     color: white;
 }

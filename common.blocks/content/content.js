@@ -1,79 +1,15 @@
-const taskListUlNode = $("#task_list");
-const inputField = $("#form_input");
-const addButton = $("#add_button");
-const deleteAllButton = $("#delete_all_button");
-const chooseAllCheckbox = $("#select_all");
-const counterLabelAll = $("#counter_label_all");
-const counterLabelChecked = $("#counter_label_checked");
-const counterLabelUnchecked = $("#counter_label_unchecked");
-const paginationPannel = $("#pagination_panel");
-
-const itemClassName = "tasks__item";
-const defaultStatusClassName = "";
-const doneStatusClassName = "content__text_done";
-const labelForActionsClassName = "item__label";
-const deleteItemButtonClassName = "item__delete";
-const wrapperForInnerTextClassName = "item__textwrapper";
-const checkboxClassName = "item__checkbox";
-const itemGhostInputFieldClassName = "item__ghost";
-const paginationPageLinkClassName = "pagination__link";
-const tabsSwitchClassName = "tabs__link";
-const counterValueClassName = "counter__value";
-const contentTextClassName = "content__text";
-
-const showCompletedTabName = "Completed";
-const showNotCompletedTabName = "Not completed";
-const showAllTabName = "All";
-
-const currentPageId = "current_page";
-const currentTabId = "current_tab";
-
 const enterKey = 13;
 const defaultPage = 1;
 const itemsOnOnePageCount = 5;
-
 let itemArray = Array();
-let bufferedArray = Array();
 let index = 0;
 
-function getCurrentPage(array) {
-   return Math.ceil(array.length / itemsOnOnePageCount);
-}
-
-function getCurrentPageByElementId(itemIndex = 0) {
-    const currentPage = itemIndex ? (itemIndex + 1) / itemsOnOnePageCount : defaultPage;
-    return Math.ceil(currentPage);
-}
-
-function setActiveStateForPage(pageNumber) {
-    const pageNodes = $("."+paginationPageLinkClassName);
-    for (const tabNode of pageNodes) {
-        if (tabNode.hasAttribute("id")) {
-            tabNode.removeAttribute("id");
-        }
-    }
-    for (const tabNode of pageNodes) {
-        if (tabNode.textContent === pageNumber.toString()) {
-            tabNode.setAttribute("id", currentPageId);
-        }
-    }
-}
-
-function getPartOfArrayForPagination(pageNumber, array = itemArray) {
-    const startIndex = array.length - (array.length - itemsOnOnePageCount * (pageNumber - 1));
-    let endIndex = startIndex + itemsOnOnePageCount;
-
-    if (endIndex >= array.length) {
-        endIndex = array.length;
-    }
-    return _.slice(array, startIndex, endIndex);
-}
-
 $(function() {
-    inputField.focus();
+    const formInput = $("#form_input");
+    formInput.focus();
 
     function addTodo() {
-        const text = inputField.val().trim();
+        const text = formInput.val().trim();
         if (text) {
             const newObject = {
                 id: index,
@@ -82,162 +18,141 @@ $(function() {
             };
             itemArray.push(newObject);
             index += 1;
-            inputField.val("");
+            formInput.val("");
+            render("last");
+        }
+    }
+
+    function getFilteredArray() {
+        const currentTabValue = $(".tabs__link.active").attr("id");
+
+        if (currentTabValue === "all") {
+            return itemArray;
+        } else {
+            const checked = (currentTabValue === "completed") ? true : false;
+            return itemArray.filter((item) => { return item.checked === checked;});
+        }
+    }
+
+    function repaintPagination(activePage, array = itemArray) {
+        const pages = Math.ceil(array.length / itemsOnOnePageCount);
+        let currentPage = defaultPage;
+        if (activePage) {
+            currentPage = (activePage === "last") ? pages : activePage;
+        } else {
+            currentPage = +$(".pagination__link.pagination__link_active").attr("id");
         }
 
-        const arrayForCheck = _.filter(itemArray, item => { return item.checked; });
-        if (arrayForCheck.length !== itemArray.length) {
-            chooseAllCheckbox.prop("checked", false);
-        } else {
-            chooseAllCheckbox.prop("checked", true);
+        if (currentPage > pages) {
+            currentPage = pages;
         }
+
+        let paginationTags = "";
+        for (let page = 1; page <= pages; page++) {
+            const className = (page === currentPage) ? "pagination__link pagination__link_active" : "pagination__link"
+            paginationTags += `<li class="${className}" id="${page}">${page}</li>`;
+        }
+
+        $("#pagination_panel").html(paginationTags);
+        return currentPage;
+    }
+
+    function getPartOfArrayForPagination(pageNumber, array = itemArray) {
+        const startIndex = array.length - (array.length - itemsOnOnePageCount * (pageNumber - 1));
+        let endIndex = startIndex + itemsOnOnePageCount;
+
+        if (endIndex >= array.length) {
+            endIndex = array.length;
+        }
+        return _.slice(array, startIndex, endIndex);
     }
 
     function repaintTags(array = itemArray) {
         let htmlTags = "";
-        for (const item of array) {
+
+        array.forEach(function(item) {
             const { id: itemIndex, text: itemText, checked: itemChecked } = item;
 
-            const taskStatusSelector = itemChecked ? doneStatusClassName : defaultStatusClassName;
+            const taskStatusClass = itemChecked ? "content__text_done" : "";
             const checkedStatus = itemChecked ? "checked" : "";
 
-            const finalSelectorForTag = itemClassName + " "  + " mb-3";
-            const template = `<li id="${itemIndex}" class="${finalSelectorForTag}">
-                                <div class="${labelForActionsClassName + " input-group-prepend"}">
-                                    <button type="button" class="${deleteItemButtonClassName + " btn btn-danger"}">Delete</button>
-                                    <input type="checkbox" class="${checkboxClassName}" ${checkedStatus}>
+            const template = `<li id="${itemIndex}" class="${"tasks__item" + " "  + " mb-3"}">
+                                <div class="${"item__label" + " input-group-prepend"}">
+                                    <button type="button" class="${"item__delete" + " btn btn-danger"}">Delete</button>
+                                    <input type="checkbox" class="item__checkbox" ${checkedStatus}>
                                 </div>
-                                <div class="${contentTextClassName + " " + taskStatusSelector}">
-                                    <div class="${wrapperForInnerTextClassName}">${itemText}</div>
+                                <div class="${"content__text" + " " + taskStatusClass}">
+                                    <div class="item__textwrapper">${itemText}</div>
                                 </div>
                             </li>`;
 
             htmlTags += template;
-        }
-        taskListUlNode.html("");
-        taskListUlNode.append(htmlTags);
-    }
-
-    function repaintPagination(array = itemArray, activePage = 0) {
-        if (!activePage) {    
-            activePage = getCurrentPage(array);
-        }
-        let paginationTags = "";
-        for (let page = 0; page < activePage; page++) {
-            const template = `<li class="${paginationPageLinkClassName}">${page + 1}</li>`;
-            paginationTags += template;
-        }
-        paginationPannel.html(paginationTags);
+        });
+        const taskList = $("#task_list");
+        taskList.html("");
+        taskList.append(htmlTags);
     }
 
     function updateCounters() {
-        const checkedTasks = _.filter(itemArray, item => { return item.checked; });
-        const uncheckedTasks = _.filter(itemArray, item => { return !item.checked; });
+        const checkedTasks = _.filter(itemArray, item => { return item.checked; }).length;
+        const allTasks = itemArray.length;
+        const uncheckedTasks = allTasks - checkedTasks;
 
-        counterLabelAll.siblings("."+counterValueClassName).text(itemArray.length);
-        counterLabelChecked.siblings("."+counterValueClassName).text(checkedTasks.length);
-        counterLabelUnchecked.siblings("."+counterValueClassName).text(uncheckedTasks.length);
+        const counterLabelAll = $("#counter_label_all");
+        const counterLabelChecked = $("#counter_label_checked");
+        const counterLabelUnchecked = $("#counter_label_unchecked");
+
+        counterLabelAll.siblings(".counter__value").attr("id", allTasks);
+        counterLabelChecked.siblings(".counter__value").attr("id", checkedTasks);
+        counterLabelUnchecked.siblings(".counter__value").attr("id", uncheckedTasks);
+
+        counterLabelAll.siblings(".counter__value").text(allTasks);
+        counterLabelChecked.siblings(".counter__value").text(checkedTasks);
+        counterLabelUnchecked.siblings(".counter__value").text(uncheckedTasks);
+
+        const checked = !!(checkedTasks && checkedTasks === allTasks);
+        $("#select_all").prop("checked", checked);
+
     }
 
-    function addElementEventHandler() {
-        addTodo();
-
-        const currentTab = $("#"+currentTabId);
-        const currentTabValue = currentTab.text();
-        if (currentTabValue !== showCompletedTabName) {
-            const activePage = getCurrentPage(itemArray);
-            const arrayForTab = getPartOfArrayForPagination(activePage);
-
-            repaintTags(arrayForTab);
-            repaintPagination(itemArray, 0);
-            setActiveStateForPage(activePage);
-        }
+    function render(page) {
+        let currentArray = getFilteredArray();
+        const currentPage = repaintPagination(page, currentArray);
+        currentArray = getPartOfArrayForPagination(currentPage, currentArray);
+        repaintTags(currentArray);
         updateCounters();
     }
 
-    function getFilteredArray(currentTabValue, array = itemArray) {
-        let bufferedArray = [];
-
-        if (currentTabValue === showCompletedTabName) {
-            bufferedArray = _.filter(array, item => { return item.checked === true; });
-        } else if (currentTabValue === showNotCompletedTabName) {
-            bufferedArray = _.filter(array, item => { return item.checked === false; });
-        } else {
-            bufferedArray = array;
-        }
-
-        return bufferedArray;
+    function updateItemIndexes() {
+        itemArray.forEach(function(item, index) {
+            item.id = index;
+        });
     }
 
-    function updateItemIndexes(array) {
-        for (let index = 0; index < array.length; index++) {
-            array[index].id = index;
-        }
-        return array;
+    function getSelectedItemIndex(e) {
+        const chosenItemTag = e.target.parentElement.parentElement;
+        return parseInt(chosenItemTag.id);
     }
 
     function checkboxEventHandler(e) {
-        const chosenItemTag = e.target.parentElement.parentElement;
-        const chosenItemIndex = parseInt(chosenItemTag.id);
-
+        const chosenItemIndex = getSelectedItemIndex(e);
         const foundedItem = _.find(itemArray, { id: chosenItemIndex });
         foundedItem.checked = !foundedItem.checked;
 
-        const currentTab = $("#"+currentTabId);
-        const currentTabValue = currentTab.text();
-        bufferedArray = getFilteredArray(currentTabValue, itemArray);
-
-        const arrayForCheck = _.filter(bufferedArray, item => { return item.checked; });
-        if (arrayForCheck.length !== bufferedArray.length) {
-            chooseAllCheckbox.prop("checked", false);
-        } else {
-            chooseAllCheckbox.prop("checked", true);
-        }
-
-        let activePage = 0;
-
-        if (currentTabValue !== showAllTabName) {
-            activePage = getCurrentPageByElementId(foundedItem.id);
-        } else {
-            activePage = parseInt($("#"+currentPageId).text());
-        }
-
-        let arrayForTabs = getPartOfArrayForPagination(activePage, bufferedArray);
-        if (arrayForTabs.length === 0) {
-            activePage -= 1;
-            arrayForTabs = getPartOfArrayForPagination(activePage, bufferedArray);
-        }
-
-        repaintTags(arrayForTabs);
-        repaintPagination(bufferedArray, 0);
-        setActiveStateForPage(activePage);
-        updateCounters();
+        render();
     }
 
-    function chooseAllEventHandler(e) {
-        let arrayForTabs = [];
+    function changeItemsState(state) {
+        itemArray.forEach(function(item) {
+            item.checked = state;
+        });
+    }
 
-        const currentTab = $("#"+currentTabId);
-        const currentTabValue = currentTab.text();
+    function selectAllEventHandler(e) {
+        const itemsStatus = e.target.checked;
+        changeItemsState(itemsStatus);
 
-        if (e.target.checked) {
-            for (let index = 0; index < itemArray.length; index++) {
-                itemArray[index].checked = true;
-            }
-            arrayForTabs = getPartOfArrayForPagination(defaultPage);
-        } else {
-            for (let index = 0; index < itemArray.length; index++) {
-                itemArray[index].checked = false;
-            }
-            if (currentTabValue !== showCompletedTabName) {
-                let arrayForTabs = getPartOfArrayForPagination(defaultPage);
-            }
-        }
-
-        repaintTags(arrayForTabs);
-        repaintPagination(itemArray, 0);
-        setActiveStateForPage(defaultPage);
-        updateCounters();
+        render();
     }
 
     function deleteChoseItemByIndex(chosenItemIndex) {
@@ -246,155 +161,93 @@ $(function() {
     }
 
     function deleteItemEventHandler(e) {
-        const chosenItemTag = e.target.parentElement.parentElement;
-        const chosenItemIndex = parseInt(chosenItemTag.id);
+        const chosenItemIndex = getSelectedItemIndex(e);
+
         deleteChoseItemByIndex(chosenItemIndex);
-        updateItemIndexes(itemArray);
+        updateItemIndexes();
 
-        let activePage = getCurrentPageByElementId(chosenItemIndex);
-        let arrayForTabs = getPartOfArrayForPagination(activePage);
-        if (!arrayForTabs.length) {
-            activePage -= 1;
-            arrayForTabs = getPartOfArrayForPagination(activePage);
-        }
-
-        repaintTags(arrayForTabs);
-        repaintPagination(itemArray, 0);
-        setActiveStateForPage(activePage);
-        updateCounters();
+        render();
     }
 
     function deleteAllEventHandler() {
         const checkedItems = _.filter(itemArray, item => { return item.checked; });
         itemArray = _.differenceWith(itemArray, checkedItems, _.isEqual);
-        bufferedArray = itemArray;
 
-        const activePage = defaultPage;
-        const numberForPagination = getCurrentPage(bufferedArray);
-        const arrayForTabs = getPartOfArrayForPagination(activePage, bufferedArray);
-
-        chooseAllCheckbox.prop("checked", false);
-
-        repaintTags(arrayForTabs, activePage);
-        repaintPagination(bufferedArray, numberForPagination);
-        setActiveStateForPage(activePage);
-        updateCounters();
+        render();
     }
 
     function doubleClickEventHandler(e) {
         const chosenItemTag = e.target.parentElement;
         const oldValue = e.target.innerText;
-        const ghostInputFieldNodeTag = `<input class="${itemGhostInputFieldClassName}" type="text" value="${oldValue}" />`;
-        $(chosenItemTag).html(ghostInputFieldNodeTag);
 
-        $("."+itemGhostInputFieldClassName).focus();
+        $(chosenItemTag).html(`<input class="item__ghost" type="text" value="${oldValue}" />`);
+        $(".item__ghost").focus();
     }
 
     function updateWithGhostInput(e) {
-        const chosenItemTag = e.target.parentElement.parentElement;
-        const chosenItemIndex = parseInt(chosenItemTag.id);
-
+        const chosenItemIndex = getSelectedItemIndex(e);
         const foundedItem = _.find(itemArray, { id: chosenItemIndex });
+
         const oldValue = foundedItem.text;
-        const newValue = $("."+itemGhostInputFieldClassName).val().trim();
-        if (newValue) {
-            foundedItem.text = newValue;
-        } else {
-            foundedItem.text = oldValue;
-        }
+        const newValue = $(".item__ghost").val().trim();
+        foundedItem.text = newValue ? newValue : oldValue;
 
-        const activePage = getCurrentPageByElementId(chosenItemIndex);
-        const arrayForTabs = getPartOfArrayForPagination(activePage);
-
-        repaintTags(arrayForTabs);
-        repaintPagination(itemArray, 0);
-        setActiveStateForPage(activePage);
-        updateCounters();
+        render();
     }
 
     function switchBetweenTabs(e) {
-        const currentTab = e.target;
-        const currentTabValue = currentTab.innerHTML;
-        bufferedArray = getFilteredArray(currentTabValue);
+        $(".tabs__link.active").removeClass("active");
+        $(this).addClass("active");
 
-        const activePage = defaultPage;
-        const numberForPagination = getCurrentPage(bufferedArray);
-        const arrayForTabs = getPartOfArrayForPagination(activePage, bufferedArray);
-
-        const activeTab = $("#"+currentTabId);
-        if (currentTabValue !== activeTab.innerHTML) {
-            activeTab.removeAttr("id");
-            currentTab.setAttribute("id", currentTabId);
-        }
-
-        repaintTags(arrayForTabs, activePage);
-        repaintPagination(bufferedArray, numberForPagination);
-
-        setActiveStateForPage(activePage);
-        updateCounters();
+        render(1);
     }
 
-    function paginationSwitcher(e) {
-        const currentPaginationTab = e.target.innerHTML;
-        const activePage = parseInt(currentPaginationTab);
+    function paginationSwitcher() {
+        $(".pagination__link.pagination__link_active").removeClass("pagination__link_active");
+        $(this).addClass("pagination__link_active");
 
-        const currentTab = $("#"+currentTabId);
-        const currentTabValue = currentTab.text();
-
-        bufferedArray = getFilteredArray(currentTabValue);
-        const numberForPagination = getCurrentPage(bufferedArray);
-        const arrayForTabs = getPartOfArrayForPagination(activePage, bufferedArray);
-
-        repaintTags(arrayForTabs);
-        repaintPagination(bufferedArray, numberForPagination);
-
-        setActiveStateForPage(activePage);
-        updateCounters();
+        render();
     }
 
-    addButton.click(function() {
-        addElementEventHandler();
+    $("#add_button").click(function() {
+        addTodo();
     });
 
-    inputField.keypress(function(e) {
+    $("#form_input").keypress(function(e) {
         if (e.which === enterKey) {
-            addElementEventHandler();
+            addTodo();
         }
     });
 
-    chooseAllCheckbox.change(function(e) {
-        chooseAllEventHandler(e);
+    $("#select_all").change(function(e) {
+        selectAllEventHandler(e);
     });
 
-    deleteAllButton.click(deleteAllEventHandler);
+    $("#delete_all_button").click(deleteAllEventHandler);
 
-    $(document).on("change", "."+checkboxClassName, function(e) {
+    $(document).on("change", ".item__checkbox", function(e) {
         checkboxEventHandler(e);
     });
 
-    $(document).on("click", "."+deleteItemButtonClassName, function(e) {
+    $(document).on("click", ".item__delete", function(e) {
         deleteItemEventHandler(e);
     });
 
-    $(document).on("dblclick", "."+wrapperForInnerTextClassName, function(e) {
+    $(document).on("dblclick", ".item__textwrapper", function(e) {
        doubleClickEventHandler(e);
     });
 
-    $(document).on("keyup", "."+itemGhostInputFieldClassName, function(e) {
+    $(document).on("keyup", ".item__ghost", function(e) {
         if (e.which === enterKey) {
             updateWithGhostInput(e);
         }
     });
 
-    $(document).on("blur", "."+itemGhostInputFieldClassName, function(e) {
+    $(document).on("blur", ".item__ghost", function(e) {
         updateWithGhostInput(e);
     });
 
-    $(document).on("click", "."+tabsSwitchClassName, function(e) {
-        switchBetweenTabs(e);
-    });
+    $(document).on("click", ".tabs__link", switchBetweenTabs);
 
-    $(document).on("click", "."+paginationPageLinkClassName, function(e) {
-        paginationSwitcher(e);
-    });
+    $(document).on("click", `.pagination__link`, paginationSwitcher);
 });

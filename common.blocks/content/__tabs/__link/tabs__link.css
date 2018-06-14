@@ -22,7 +22,7 @@
     text-decoration: none;
 }
 
-#current_tab {
+.active {
     text-decoration: none;
     border: 1px solid darkblue;
     color: darkblue;
