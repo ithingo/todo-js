@@ -23,6 +23,7 @@ const contentTextClassName = "content__text";
 
 const showCompletedTabName = "Completed";
 const showNotCompletedTabName = "Not completed";
+const showAllTabName = "All";
 
 const currentPageId = "current_page";
 const currentTabId = "current_tab";
@@ -50,6 +51,8 @@ function setActiveStateForPage(pageNumber) {
         if (tabNode.hasAttribute("id")) {
             tabNode.removeAttribute("id");
         }
+    }
+    for (const tabNode of pageNodes) {
         if (tabNode.textContent === pageNumber.toString()) {
             tabNode.setAttribute("id", currentPageId);
         }
@@ -125,7 +128,6 @@ $(function() {
             paginationTags += template;
         }
         paginationPannel.html(paginationTags);
-        // setActiveStateForPage(activePage);
     }
 
     function updateCounters() {
@@ -140,30 +142,46 @@ $(function() {
     function addButtonEventHandler() {
         addTodo();
         const activePage = getCurrentPage(itemArray);
-        bufferedArray = getPartOfArrayForPagination(activePage);
+        const arrayForTab = getPartOfArrayForPagination(activePage);
 
-        console.log("add button: "+activePage+ "но передаю 0");
-
-        repaintTags(bufferedArray);
+        repaintTags(arrayForTab);
         repaintPagination(itemArray, 0);
         setActiveStateForPage(activePage);
         updateCounters();
-        return false;
     }
 
     function mainInputEventHandler(e) {
         if (e.which === enterKey) {
             addTodo();
             const activePage = getCurrentPage(itemArray);
-            bufferedArray = getPartOfArrayForPagination(activePage);
+            const arrayForTab = getPartOfArrayForPagination(activePage);
 
-            console.log("main input: "+activePage+ "но передаю 0");
-
-            repaintTags(bufferedArray);
+            repaintTags(arrayForTab);
             repaintPagination(itemArray, 0);
             setActiveStateForPage(activePage);
             updateCounters();
         }
+    }
+
+    function getFilteredArray(currentTabValue, array = itemArray) {
+        let bufferedArray = [];
+
+        if (currentTabValue === showCompletedTabName) {
+            bufferedArray = _.filter(array, item => { return item.checked === true; });
+        } else if (currentTabValue === showNotCompletedTabName) {
+            bufferedArray = _.filter(array, item => { return item.checked === false; });
+        } else {
+            bufferedArray = array;
+        }
+
+        return bufferedArray;
+    }
+
+    function updateItemIndexes(array) {
+        for (let index = 0; index < array.length; index++) {
+            array[index].id = index;
+        }
+        return array;
     }
 
     function checkboxEventHandler(e) {
@@ -175,7 +193,7 @@ $(function() {
 
         const currentTab = $("#"+currentTabId);
         const currentTabValue = currentTab.text();
-        bufferedArray = getFilteredArray(currentTabValue);
+        bufferedArray = getFilteredArray(currentTabValue, itemArray);
 
         const arrayForCheck = _.filter(bufferedArray, item => { return item.checked; });
         if (arrayForCheck.length !== bufferedArray.length) {
@@ -184,13 +202,25 @@ $(function() {
             chooseAllCheckbox.prop("checked", true);
         }
 
-        const activePage = getCurrentPageByElementId(chosenItemIndex); // -1
-        const arrayForTab = getPartOfArrayForPagination(activePage, bufferedArray);
+        let activePage = 0;
 
-        console.log("checkbox 1: "+activePage+ "но передаю 0");
+        if (currentTabValue !== showAllTabName) {
+            activePage = getCurrentPageByElementId(foundedItem.id);
+            console.log("here");
+        } else {
+            activePage = parseInt($("#"+currentPageId).text());
+            console.log("there");
 
-        repaintTags(arrayForTab);
-        repaintPagination(itemArray, 0);
+        }
+
+        let arrayForTabs = getPartOfArrayForPagination(activePage, bufferedArray);
+        if (arrayForTabs.length === 0) {
+            activePage -= 1;
+            arrayForTabs = getPartOfArrayForPagination(activePage, bufferedArray);
+        }
+
+        repaintTags(arrayForTabs);
+        repaintPagination(bufferedArray, 0);
         setActiveStateForPage(activePage);
         updateCounters();
     }
@@ -205,38 +235,34 @@ $(function() {
                 itemArray[index].checked = false;
             }
         }
-
         const activePage = getCurrentPage(itemArray);
-        bufferedArray = getPartOfArrayForPagination(activePage);
+        const arrayForTabs = getPartOfArrayForPagination(activePage);
 
-        console.log("choose all: "+activePage+ "но передаю 0");
-
-        repaintTags(bufferedArray);
+        repaintTags(arrayForTabs);
         repaintPagination(itemArray, 0);
         setActiveStateForPage(defaultPage);
         updateCounters();
     }
 
-    function deleteWithIndexUpdating(chosenItemIndex) {
+    function deleteChoseItemByIndex(chosenItemIndex) {
         const foundedItem = _.find(itemArray, { id: chosenItemIndex });
         _.pull(itemArray, foundedItem);
-
-        for (let index = 0; index < itemArray.length; index++) {
-            itemArray[index].id = index;
-        }
     }
 
     function deleteItemEventHandler(e) {
         const chosenItemTag = e.target.parentElement.parentElement;
         const chosenItemIndex = parseInt(chosenItemTag.id);
-        deleteWithIndexUpdating(chosenItemIndex);
+        deleteChoseItemByIndex(chosenItemIndex);
+        updateItemIndexes(itemArray);
 
-        const activePage = getCurrentPageByElementId(chosenItemIndex);
-        bufferedArray = getPartOfArrayForPagination(activePage);
+        let activePage = getCurrentPageByElementId(chosenItemIndex);
+        let arrayForTabs = getPartOfArrayForPagination(activePage);
+        if (!arrayForTabs.length) {
+            activePage -= 1;
+            arrayForTabs = getPartOfArrayForPagination(activePage);
+        }
 
-        console.log("delete single: "+activePage+ "но передаю 0");
-
-        repaintTags(bufferedArray);
+        repaintTags(arrayForTabs);
         repaintPagination(itemArray, 0);
         setActiveStateForPage(activePage);
         updateCounters();
@@ -244,8 +270,6 @@ $(function() {
 
     function deleteAllEventHandler() {
         itemArray = [];
-
-        console.log("deleteall: nofing");
 
         repaintTags();
         repaintPagination();
@@ -275,46 +299,22 @@ $(function() {
         }
 
         const activePage = getCurrentPageByElementId(chosenItemIndex);
-        bufferedArray = getPartOfArrayForPagination(activePage);
+        const arrayForTabs = getPartOfArrayForPagination(activePage);
 
-        console.log("update ghost: "+activePage+ "но передаю 0");
-
-        repaintTags(bufferedArray);
+        repaintTags(arrayForTabs);
         repaintPagination(itemArray, 0);
         setActiveStateForPage(activePage);
         updateCounters();
     }
 
-    function getFilteredArray(currentTabValue) {
-        let bufferedArray = [];
-
-        if (currentTabValue === showCompletedTabName) {
-            bufferedArray = _.filter(itemArray, item => { return item.checked; });
-        } else if (currentTabValue === showNotCompletedTabName) {
-            bufferedArray = _.filter(itemArray, item => { return !item.checked; });
-        } else {
-            bufferedArray = itemArray;
-        }
-
-        for (let index = 0; index < bufferedArray.length; index++) {
-            bufferedArray[index].id = index;
-        }
-
-        return bufferedArray;
-    }
-
     function switchBetweenTabs(e) {
         const currentTab = e.target;
         const currentTabValue = currentTab.innerHTML;
-
         bufferedArray = getFilteredArray(currentTabValue);
 
         const activePage = defaultPage;
         const numberForPagination = getCurrentPage(bufferedArray);
         const arrayForTabs = getPartOfArrayForPagination(activePage, bufferedArray);
-
-        console.log(bufferedArray);
-        console.log(arrayForTabs);
 
         const activeTab = $("#"+currentTabId);
         if (currentTabValue !== activeTab.innerHTML) {
@@ -322,11 +322,10 @@ $(function() {
             currentTab.setAttribute("id", currentTabId);
         }
 
-        console.log("switch: "+numberForPagination);
-
         repaintTags(arrayForTabs, activePage);
-        repaintPagination(arrayForTabs, numberForPagination);
-        setActiveStateForPage(defaultPage);
+        repaintPagination(bufferedArray, numberForPagination);
+
+        setActiveStateForPage(activePage);
         updateCounters();
     }
 
@@ -338,19 +337,15 @@ $(function() {
         const currentTabValue = currentTab.text();
 
         bufferedArray = getFilteredArray(currentTabValue);
-
         const numberForPagination = getCurrentPage(bufferedArray);
         const arrayForTabs = getPartOfArrayForPagination(activePage, bufferedArray);
 
-        console.log("pagination: "+numberForPagination);
-
         repaintTags(arrayForTabs);
-        repaintPagination(arrayForTabs, numberForPagination);
+        repaintPagination(bufferedArray, numberForPagination);
+
         setActiveStateForPage(activePage);
         updateCounters();
     }
-
-    //event handlers
 
     addButton.click(addButtonEventHandler);
 
