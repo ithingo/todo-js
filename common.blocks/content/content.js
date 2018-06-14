@@ -130,7 +130,7 @@ $(function() {
         counterLabelUnchecked.siblings("."+counterValueClassName).text(uncheckedTasks.length);
     }
 
-    addButton.click(function() {
+    function addButtonEventHandler() {
         addTodo();
         const activePage = getCurrentPage(itemArray);
         bufferedArray = getPartOfArrayForPagination(activePage);
@@ -139,9 +139,9 @@ $(function() {
         repaintPagination(itemArray, 0);
         updateCounters();
         return false;
-    });
+    }
 
-    inputField.keypress(function(e) {
+    function mainInputEventHandler(e) {
         if (e.which === enterKey) {
             addTodo();
             const activePage = getCurrentPage(itemArray);
@@ -151,9 +151,9 @@ $(function() {
             repaintPagination(itemArray, 0);
             updateCounters();
         }
-    });
+    }
 
-    $(document).on("change", "."+checkboxClassName, function(e) {
+    function checkboxEventHandler(e) {
         const chosenItemTag = e.target.parentElement.parentElement;
         const chosenItemIndex = parseInt(chosenItemTag.id);
         const foundedItem = _.find(itemArray, { id: chosenItemIndex });
@@ -166,9 +166,9 @@ $(function() {
         repaintTags(bufferedArray);
         repaintPagination(itemArray, 0);
         updateCounters();
-    });
+    }
 
-    chooseAllButton.click(function() {
+    function chooseAllEventHandler() {
         for (let index = 0; index < itemArray.length; index++) {
             itemArray[index].checked = true;
         }
@@ -178,7 +178,7 @@ $(function() {
         repaintTags(bufferedArray);
         repaintPagination(itemArray, 0);
         updateCounters();
-    });
+    }
 
     function deleteWithIndexUpdating(chosenItemIndex) {
         const foundedItem = _.find(itemArray, { id: chosenItemIndex });
@@ -188,7 +188,7 @@ $(function() {
         }
     }
 
-    $(document).on("click", "."+deleteItemButtonClassName, function(e) {
+    function deleteItemEventHandler(e) {
         const chosenItemTag = e.target.parentElement.parentElement;
         // console.log(chosenItemTag);
         const chosenItemIndex = parseInt(chosenItemTag.id);
@@ -203,26 +203,26 @@ $(function() {
         repaintTags(bufferedArray);
         repaintPagination(itemArray, 0);
         updateCounters();
-    });
+    }
 
-    deleteAllButton.click(function() {
+    function deleteAllEventHandler() {
         itemArray = [];
 
         repaintTags();
         repaintPagination();
         updateCounters();
-    });
+    }
 
-    $(document).on("dblclick", "."+wrapperForInnerTextClassName, function(e) {
+    function doubleClickEventHandler(e) {
         const chosenItemTag = e.target.parentElement;
         const oldValue = e.target.innerText;
         const ghostInputFieldNodeTag = `<input class="${itemGhostInputFieldClassName}" type="text" value="${oldValue}" />`;
         $(chosenItemTag).html(ghostInputFieldNodeTag);
 
         $("."+itemGhostInputFieldClassName).focus();
-    });
+    }
 
-    $(document).on("keyup", "."+itemGhostInputFieldClassName, function(e) {
+    function updateWithGhostInput(e) {
         if (e.which === enterKey) {
             const chosenItemTag = e.target.parentElement.parentElement;
             const chosenItemIndex = parseInt(chosenItemTag.id);
@@ -237,9 +237,9 @@ $(function() {
             repaintPagination(itemArray, 0);
             updateCounters();
         }
-    });
+    }
 
-    $(document).on("click", "."+tabsSwitchClassName, function(e) {
+    function switchBetweenTabs(e) {
         const currentTab = e.target;
         const currentTabValue = currentTab.innerHTML;
 
@@ -252,10 +252,13 @@ $(function() {
         }
 
         console.log(bufferedArray);
+        for (let index = 0; index < bufferedArray.length; index++) {
+            bufferedArray[index].id = index;
+        }
+        console.log("hhh");
+        console.log(bufferedArray);
 
-        // здесь ыильтруется массив по той или иной вкладке
-        // этот отыильтрованный массив и надо делить на нужные части (уже не по текущей странице, а по возможности, т.к. массив меньше исходного)
-        // я же перерисовываю в repaint() исходный массив
+        //!! buffered array
 
         const activePage = getCurrentPage(bufferedArray);
         const arrayForTabs = getPartOfArrayForPagination(activePage);
@@ -269,9 +272,9 @@ $(function() {
         repaintTags(arrayForTabs);
         repaintPagination(itemArray, 0);
         updateCounters();
-    });
+    }
 
-    $(document).on("click", "."+paginationPageLinkClassName, function(e) {
+    function paginationSwitcher(e) {
         const currentTab = e.target.innerHTML;
         const activePage = parseInt(currentTab);
         const arrayForTabs = getPartOfArrayForPagination(activePage);
@@ -280,7 +283,41 @@ $(function() {
         repaintPagination(itemArray, 0);
         setActiveStateForPage(activePage);
         updateCounters();
+    }
+
+
+
+    addButton.click(addButtonEventHandler);
+
+    inputField.keypress(function(e) {
+        mainInputEventHandler(e);
     });
 
+    chooseAllButton.click(chooseAllEventHandler);
 
+    deleteAllButton.click(deleteAllEventHandler);
+
+    $(document).on("change", "."+checkboxClassName, function(e) {
+        checkboxEventHandler(e);
+    });
+
+    $(document).on("click", "."+deleteItemButtonClassName, function(e) {
+        deleteItemEventHandler(e);
+    });
+
+    $(document).on("dblclick", "."+wrapperForInnerTextClassName, function(e) {
+       doubleClickEventHandler(e);
+    });
+
+    $(document).on("keyup", "."+itemGhostInputFieldClassName, function(e) {
+        updateWithGhostInput(e);
+    });
+
+    $(document).on("click", "."+tabsSwitchClassName, function(e) {
+        switchBetweenTabs(e);
+    });
+
+    $(document).on("click", "."+paginationPageLinkClassName, function(e) {
+        paginationSwitcher(e);
+    });
 });
