@@ -139,20 +139,12 @@ $(function() {
         counterLabelUnchecked.siblings("."+counterValueClassName).text(uncheckedTasks.length);
     }
 
-    function addButtonEventHandler() {
+    function addElementEventHandler() {
         addTodo();
-        const activePage = getCurrentPage(itemArray);
-        const arrayForTab = getPartOfArrayForPagination(activePage);
 
-        repaintTags(arrayForTab);
-        repaintPagination(itemArray, 0);
-        setActiveStateForPage(activePage);
-        updateCounters();
-    }
-
-    function mainInputEventHandler(e) {
-        if (e.which === enterKey) {
-            addTodo();
+        const currentTab = $("#"+currentTabId);
+        const currentTabValue = currentTab.text();
+        if (currentTabValue !== showCompletedTabName) {
             const activePage = getCurrentPage(itemArray);
             const arrayForTab = getPartOfArrayForPagination(activePage);
 
@@ -352,10 +344,14 @@ $(function() {
         updateCounters();
     }
 
-    addButton.click(addButtonEventHandler);
+    addButton.click(function() {
+        addElementEventHandler();
+    });
 
     inputField.keypress(function(e) {
-        mainInputEventHandler(e);
+        if (e.which === enterKey) {
+            addElementEventHandler();
+        }
     });
 
     chooseAllCheckbox.change(function(e) {
