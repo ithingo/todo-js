@@ -232,8 +232,7 @@ $(function() {
                 itemArray[index].checked = false;
             }
         }
-        const activePage = getCurrentPage(itemArray);
-        const arrayForTabs = getPartOfArrayForPagination(activePage);
+        const arrayForTabs = getPartOfArrayForPagination(defaultPage);  // v*
 
         repaintTags(arrayForTabs);
         repaintPagination(itemArray, 0);
