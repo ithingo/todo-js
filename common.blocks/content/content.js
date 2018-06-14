@@ -125,7 +125,7 @@ $(function() {
             paginationTags += template;
         }
         paginationPannel.html(paginationTags);
-        setActiveStateForPage(activePage);
+        // setActiveStateForPage(activePage);
     }
 
     function updateCounters() {
@@ -142,8 +142,11 @@ $(function() {
         const activePage = getCurrentPage(itemArray);
         bufferedArray = getPartOfArrayForPagination(activePage);
 
+        console.log("add button: "+activePage+ "но передаю 0");
+
         repaintTags(bufferedArray);
         repaintPagination(itemArray, 0);
+        setActiveStateForPage(activePage);
         updateCounters();
         return false;
     }
@@ -154,8 +157,11 @@ $(function() {
             const activePage = getCurrentPage(itemArray);
             bufferedArray = getPartOfArrayForPagination(activePage);
 
+            console.log("main input: "+activePage+ "но передаю 0");
+
             repaintTags(bufferedArray);
             repaintPagination(itemArray, 0);
+            setActiveStateForPage(activePage);
             updateCounters();
         }
     }
@@ -181,8 +187,11 @@ $(function() {
         const activePage = getCurrentPageByElementId(chosenItemIndex); // -1
         const arrayForTab = getPartOfArrayForPagination(activePage, bufferedArray);
 
+        console.log("checkbox 1: "+activePage+ "но передаю 0");
+
         repaintTags(arrayForTab);
         repaintPagination(itemArray, 0);
+        setActiveStateForPage(activePage);
         updateCounters();
     }
 
@@ -200,8 +209,11 @@ $(function() {
         const activePage = getCurrentPage(itemArray);
         bufferedArray = getPartOfArrayForPagination(activePage);
 
+        console.log("choose all: "+activePage+ "но передаю 0");
+
         repaintTags(bufferedArray);
         repaintPagination(itemArray, 0);
+        setActiveStateForPage(defaultPage);
         updateCounters();
     }
 
@@ -222,13 +234,18 @@ $(function() {
         const activePage = getCurrentPageByElementId(chosenItemIndex);
         bufferedArray = getPartOfArrayForPagination(activePage);
 
+        console.log("delete single: "+activePage+ "но передаю 0");
+
         repaintTags(bufferedArray);
         repaintPagination(itemArray, 0);
+        setActiveStateForPage(activePage);
         updateCounters();
     }
 
     function deleteAllEventHandler() {
         itemArray = [];
+
+        console.log("deleteall: nofing");
 
         repaintTags();
         repaintPagination();
@@ -260,8 +277,11 @@ $(function() {
         const activePage = getCurrentPageByElementId(chosenItemIndex);
         bufferedArray = getPartOfArrayForPagination(activePage);
 
+        console.log("update ghost: "+activePage+ "но передаю 0");
+
         repaintTags(bufferedArray);
         repaintPagination(itemArray, 0);
+        setActiveStateForPage(activePage);
         updateCounters();
     }
 
@@ -289,8 +309,12 @@ $(function() {
 
         bufferedArray = getFilteredArray(currentTabValue);
 
-        const activePage = getCurrentPage(bufferedArray);
-        const arrayForTabs = getPartOfArrayForPagination(activePage, bufferedArray);  
+        const activePage = defaultPage;
+        const numberForPagination = getCurrentPage(bufferedArray);
+        const arrayForTabs = getPartOfArrayForPagination(activePage, bufferedArray);
+
+        console.log(bufferedArray);
+        console.log(arrayForTabs);
 
         const activeTab = $("#"+currentTabId);
         if (currentTabValue !== activeTab.innerHTML) {
@@ -298,8 +322,11 @@ $(function() {
             currentTab.setAttribute("id", currentTabId);
         }
 
-        repaintTags(arrayForTabs);
-        repaintPagination(arrayForTabs, activePage);
+        console.log("switch: "+numberForPagination);
+
+        repaintTags(arrayForTabs, activePage);
+        repaintPagination(arrayForTabs, numberForPagination);
+        setActiveStateForPage(defaultPage);
         updateCounters();
     }
 
@@ -313,10 +340,13 @@ $(function() {
         bufferedArray = getFilteredArray(currentTabValue);
 
         const numberForPagination = getCurrentPage(bufferedArray);
-        const arrayForTabs = getPartOfArrayForPagination(activePage, bufferedArray);  
+        const arrayForTabs = getPartOfArrayForPagination(activePage, bufferedArray);
+
+        console.log("pagination: "+numberForPagination);
 
         repaintTags(arrayForTabs);
         repaintPagination(arrayForTabs, numberForPagination);
+        setActiveStateForPage(activePage);
         updateCounters();
     }
 
