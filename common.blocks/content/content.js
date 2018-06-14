@@ -2,7 +2,7 @@ const taskListUlNode = $("#task_list");
 const inputField = $("#form_input");
 const addButton = $("#add_button");
 const deleteAllButton = $("#delete_all_button");
-const chooseAllButton = $("#choose_all_button");
+const chooseAllCheckbox = $("#select_all");
 const counterLabelAll = $("#counter_label_all");
 const counterLabelChecked = $("#counter_label_checked");
 const counterLabelUnchecked = $("#counter_label_unchecked");
@@ -172,12 +172,21 @@ $(function() {
         updateCounters();
     }
 
-    function chooseAllEventHandler() {
-        for (let index = 0; index < itemArray.length; index++) {
-            itemArray[index].checked = true;
+    function chooseAllEventHandler(e) {
+        if (e.target.checked) {
+            for (let index = 0; index < itemArray.length; index++) {
+                itemArray[index].checked = true;
+            }
+        } else {
+            for (let index = 0; index < itemArray.length; index++) {
+                itemArray[index].checked = false;
+            }
         }
+
         const activePage = getCurrentPage(itemArray);
         bufferedArray = getPartOfArrayForPagination(activePage);
+
+
 
         repaintTags(bufferedArray);
         repaintPagination(itemArray, 0);
@@ -307,7 +316,9 @@ $(function() {
         mainInputEventHandler(e);
     });
 
-    chooseAllButton.click(chooseAllEventHandler);
+    chooseAllCheckbox.change(function(e) {
+        chooseAllEventHandler(e);
+    });
 
     deleteAllButton.click(deleteAllEventHandler);
 
