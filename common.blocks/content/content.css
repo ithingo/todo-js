@@ -26,3 +26,12 @@ body {
     border: 2px solid darkcyan;
 }
 
+.content__selectall {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-self: center;
+    vertical-align: middle;
+    padding-top: 20px;
+}
+

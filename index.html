@@ -12,10 +12,12 @@
     <div class="content">
         <div class="content__title">Todo with JS & jQuery</div>
 
-        <div class="content__panel btn-toolbar mb-3"  role="toolbar" aria-label="Toolbar with button groups">
-            <div class="btn-group mr-2" role="group" aria-label="First group">
-                <button id="choose_all_button" class="panel__button panel__button_chooseall btn btn-warning btn-lg">Select all</button>
-                <button id="delete_all_button" class="panel__button panel__button_deleteall btn btn-danger btn-lg">Delete all</button>
+        <div class="content__panel mb-3"  role="toolbar" aria-label="Toolbar with button groups">
+            <button id="delete_all_button" class="panel__button panel__button_deleteall btn btn-secondary btn-lg">Delete all</button>
+
+            <div class="content__selectall">
+                <input id="select_all" type="checkbox" value="">
+                <div>Select or deselect all</div>
             </div>
         </div>
 
