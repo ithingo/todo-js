@@ -56,14 +56,14 @@ function setActiveStateForPage(pageNumber) {
     }
 }
 
-function getPartOfArrayForPagination(pageNumber) {
-    const startIndex = itemArray.length - (itemArray.length - itemsOnOnePageCount * (pageNumber - 1));
+function getPartOfArrayForPagination(pageNumber, array = itemArray) {
+    const startIndex = array.length - (array.length - itemsOnOnePageCount * (pageNumber - 1));
     let endIndex = startIndex + itemsOnOnePageCount;
 
-    if (endIndex >= itemArray.length) {
-        endIndex = itemArray.length;
+    if (endIndex >= array.length) {
+        endIndex = array.length;
     }
-    return _.slice(itemArray, startIndex, endIndex);
+    return _.slice(array, startIndex, endIndex);
 }
 
 $(function() {
@@ -249,19 +249,26 @@ $(function() {
             bufferedArray = _.filter(itemArray, item => { return !item.checked; });
         } else {
             bufferedArray = itemArray;
+            alert("im here");
         }
 
-        console.log(bufferedArray);
         for (let index = 0; index < bufferedArray.length; index++) {
             bufferedArray[index].id = index;
         }
+
         console.log("hhh");
         console.log(bufferedArray);
 
         //!! buffered array
 
         const activePage = getCurrentPage(bufferedArray);
-        const arrayForTabs = getPartOfArrayForPagination(activePage);
+
+        console.log("pge:");
+        console.log(activePage);
+
+        const arrayForTabs = getPartOfArrayForPagination(activePage, bufferedArray);   //here should pass the buffered array!!!!
+
+        console.log(arrayForTabs);
 
         const activeTab = $("#"+currentTabId);
         if (currentTabValue !== activeTab.innerHTML) {
@@ -270,22 +277,22 @@ $(function() {
         }
 
         repaintTags(arrayForTabs);
-        repaintPagination(itemArray, 0);
+        repaintPagination(arrayForTabs, activePage);
         updateCounters();
     }
 
     function paginationSwitcher(e) {
         const currentTab = e.target.innerHTML;
         const activePage = parseInt(currentTab);
-        const arrayForTabs = getPartOfArrayForPagination(activePage);
+        const bufferedArray = getPartOfArrayForPagination(activePage);
 
-        repaintTags(arrayForTabs);
+        repaintTags(bufferedArray);
         repaintPagination(itemArray, 0);
         setActiveStateForPage(activePage);
         updateCounters();
     }
 
-
+    //event handlers
 
     addButton.click(addButtonEventHandler);
 
