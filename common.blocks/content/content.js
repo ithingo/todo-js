@@ -156,13 +156,18 @@ $(function() {
     function checkboxEventHandler(e) {
         const chosenItemTag = e.target.parentElement.parentElement;
         const chosenItemIndex = parseInt(chosenItemTag.id);
+
         const foundedItem = _.find(itemArray, { id: chosenItemIndex });
         foundedItem.checked = !foundedItem.checked;
 
-        const activePage = getCurrentPageByElementId(chosenItemIndex);
-        bufferedArray = getPartOfArrayForPagination(activePage);
+        const currentTab = $("#"+currentTabId);
+        const currentTabValue = currentTab.text();
+        bufferedArray = getFilteredArray(currentTabValue);
 
-        repaintTags(bufferedArray);
+        const activePage = getCurrentPageByElementId(chosenItemIndex); // -1
+        const arrayForTab = getPartOfArrayForPagination(activePage, bufferedArray);
+
+        repaintTags(arrayForTab);
         repaintPagination(itemArray, 0);
         updateCounters();
     }
