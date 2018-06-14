@@ -151,8 +151,8 @@ $(function() {
             repaintTags(arrayForTab);
             repaintPagination(itemArray, 0);
             setActiveStateForPage(activePage);
-            updateCounters();
         }
+        updateCounters();
     }
 
     function getFilteredArray(currentTabValue, array = itemArray) {
@@ -215,16 +215,24 @@ $(function() {
     }
 
     function chooseAllEventHandler(e) {
+        let arrayForTabs = [];
+
+        const currentTab = $("#"+currentTabId);
+        const currentTabValue = currentTab.text();
+
         if (e.target.checked) {
             for (let index = 0; index < itemArray.length; index++) {
                 itemArray[index].checked = true;
             }
+            arrayForTabs = getPartOfArrayForPagination(defaultPage);
         } else {
             for (let index = 0; index < itemArray.length; index++) {
                 itemArray[index].checked = false;
             }
+            if (currentTabValue !== showCompletedTabName) {
+                let arrayForTabs = getPartOfArrayForPagination(defaultPage);
+            }
         }
-        const arrayForTabs = getPartOfArrayForPagination(defaultPage);  // v*
 
         repaintTags(arrayForTabs);
         repaintPagination(itemArray, 0);
