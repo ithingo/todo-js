@@ -6,4 +6,11 @@
 	flex-direction: column;
 	justify-content: center;
 	padding: 0px;
+	list-style-type: none;
+
+}
+
+.panel__counter > li {
+	display: flex;
+	flex-direction: row;
 }

@@ -10,7 +10,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 50px;
+    padding: 30px;
 
 }
 
@@ -20,7 +20,7 @@ body {
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    padding: 50px;
+    padding: 20px;
     width: 650px;
     height: 800px;
     border: 2px solid darkcyan;
