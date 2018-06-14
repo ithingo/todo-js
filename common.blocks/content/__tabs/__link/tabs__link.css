@@ -21,3 +21,9 @@
     cursor: pointer;
     text-decoration: none;
 }
+
+#current_tab {
+    text-decoration: none;
+    border: 1px solid darkblue;
+    color: darkblue;
+}
