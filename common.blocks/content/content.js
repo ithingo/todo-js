@@ -206,11 +206,8 @@ $(function() {
 
         if (currentTabValue !== showAllTabName) {
             activePage = getCurrentPageByElementId(foundedItem.id);
-            console.log("here");
         } else {
             activePage = parseInt($("#"+currentPageId).text());
-            console.log("there");
-
         }
 
         let arrayForTabs = getPartOfArrayForPagination(activePage, bufferedArray);
@@ -269,10 +266,19 @@ $(function() {
     }
 
     function deleteAllEventHandler() {
-        itemArray = [];
+        const checkedItems = _.filter(itemArray, item => { return item.checked; });
+        itemArray = _.differenceWith(itemArray, checkedItems, _.isEqual);
+        bufferedArray = itemArray;
 
-        repaintTags();
-        repaintPagination();
+        const activePage = defaultPage;
+        const numberForPagination = getCurrentPage(bufferedArray);
+        const arrayForTabs = getPartOfArrayForPagination(activePage, bufferedArray);
+
+        chooseAllCheckbox.prop("checked", false);
+
+        repaintTags(arrayForTabs, activePage);
+        repaintPagination(bufferedArray, numberForPagination);
+        setActiveStateForPage(activePage);
         updateCounters();
     }
 
@@ -291,7 +297,7 @@ $(function() {
 
         const foundedItem = _.find(itemArray, { id: chosenItemIndex });
         const oldValue = foundedItem.text;
-        const newValue = $("."+itemGhostInputFieldClassName).val();
+        const newValue = $("."+itemGhostInputFieldClassName).val().trim();
         if (newValue) {
             foundedItem.text = newValue;
         } else {
